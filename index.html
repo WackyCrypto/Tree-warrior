@@ -1036,7 +1036,7 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
     </div>
     <input id="room-code-input" placeholder="ENTER CODE" maxlength="6" oninput="this.value=this.value.toUpperCase()"/>
     <div id="room-code-display"></div>
-    <div id="online-status" style="min-height:1.2rem;font-size:.6rem;color:#44ffaa;text-align:center;margin-top:.2rem;"></div>
+    <div id="online-status" style="min-height:2rem;font-size:clamp(.75rem,2.5vmin,1.1rem);color:#44ffaa;text-align:center;margin-top:.5rem;font-weight:bold;letter-spacing:.03em;"></div>
   </div>
   <button class="btn-primary" style="margin-top:.6rem;" onclick="showAchievements()">&#127942; ACHIEVEMENTS</button>
   <button class="btn-primary" style="margin-top:.4rem;" onclick="showShop()">&#128722; SHOP</button>
@@ -3745,34 +3745,52 @@ async function _doPoll(){
   if(d.status==='waiting')_setOnlineStatus('🔍 Searching...');
 }
 async function fwFindMatch(){
-  if(!FW_TOKEN){alert('Not signed in!');return;}
+  const btn=document.querySelector('.btn-online');
+  if(btn)btn.textContent='⏳ Connecting...';
+  if(!FW_TOKEN){
+    _setOnlineStatus('❌ Please sign in first!');
+    if(btn)btn.textContent='🔍 Find Match';
+    return;
+  }
   fwStopPolling();
   window._fwMP={active:false};
   _setOnlineStatus('🔄 Joining queue...');
   try{
     const d=await apiPost('/mp/queue',{},true);
-    if(!d){_setOnlineStatus('❌ No response from server');return;}
-    if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+    if(!d){_setOnlineStatus('❌ No server response');if(btn)btn.textContent='🔍 Find Match';return;}
+    if(d.error){_setOnlineStatus('❌ '+d.error);if(btn)btn.textContent='🔍 Find Match';return;}
     if(d.status==='matched'){
       window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-      _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');
+      _setOnlineStatus('⚔️ MATCHED vs '+d.opponent+'! Picking fighters...');
+      if(btn)btn.textContent='⚔️ Matched!';
       setTimeout(()=>showSelect(),1800);
     }else{
-      _setOnlineStatus('🔍 Searching for opponent...');
+      _setOnlineStatus('🔍 Searching for opponent... (keep this open)');
+      if(btn)btn.textContent='🔍 Searching...';
     }
     _pollTimer=setInterval(_doPoll,_pollInterval);
   }catch(err){
     _setOnlineStatus('❌ Error: '+err.message);
+    if(btn)btn.textContent='🔍 Find Match';
   }
 }
 
 function showJoinRoom(){
   const inp=document.getElementById('room-code-input');
   if(!inp)return;
-  if(inp.style.display==='none'){
-    inp.style.display='block';inp.focus();
-    inp.onkeydown=e=>{if(e.key==='Enter'&&inp.value.length===6){fwJoinRoom(inp.value);inp.style.display='none';}};
-  } else inp.style.display='none';
+  const hidden=!inp.style.display||inp.style.display==='none';
+  inp.style.display=hidden?'block':'none';
+  inp.style.cssText='display:'+inp.style.display+';font-size:1rem;padding:.4rem;border-radius:4px;text-align:center;width:8rem;letter-spacing:.2em;';
+  if(hidden){
+    inp.focus();
+    _setOnlineStatus('👆 Type 6-char code then press Enter');
+    inp.onkeydown=async e=>{
+      if(e.key==='Enter'&&inp.value.length>=4){
+        await fwJoinRoom(inp.value.trim().toUpperCase());
+        inp.style.display='none';
+      }
+    };
+  }
 }
 
 function _wsHandle_DISABLED(msg){
@@ -4913,7 +4931,7 @@ function _mpSyncMapSelect(id){
 }
 
 async function fwCreateRoom(){
-  if(!FW_TOKEN){alert('Not signed in!');return;}
+  if(!FW_TOKEN){_setOnlineStatus('❌ Please sign in first!');return;}
   fwStopPolling();
   _setOnlineStatus('🔄 Creating room...');
   try{
@@ -4921,8 +4939,11 @@ async function fwCreateRoom(){
     if(d.error){_setOnlineStatus('❌ '+d.error);return;}
     window._fwMP={active:false,roomCode:d.roomCode};
     const el=document.getElementById('room-code-display');
-    if(el){el.textContent='Room code: '+d.roomCode;el.style.display='block';el.style.fontSize='.8rem';el.style.color='#ffcc44';}
-    _setOnlineStatus('🏠 Share this code: '+d.roomCode);
+    if(el){
+      el.textContent='📋 Room Code: '+d.roomCode;
+      el.style.cssText='display:block;font-size:1.4rem;color:#ffcc44;letter-spacing:.2em;margin:.3rem 0;font-weight:bold;';
+    }
+    _setOnlineStatus('✅ Share code "'+d.roomCode+'" with your friend!');
     _pollTimer=setInterval(_doPoll,_pollInterval);
   }catch(err){_setOnlineStatus('❌ '+err.message);}
 }
