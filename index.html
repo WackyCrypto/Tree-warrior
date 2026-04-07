@@ -1646,6 +1646,18 @@ function showMapSelect(){
   buildMapGrid();
   updateMapUI();
   showScreen('map-screen');
+  // In MP: P2 waits, P1 picks
+  if(window._fwMP?.active){
+    const confirmBtn=document.getElementById('map-fight-btn');
+    if(window._fwMP.slot==='p2'){
+      // P2: disable confirm, show waiting
+      if(confirmBtn){confirmBtn.disabled=true;confirmBtn.textContent='⏳ Waiting for '+window._fwMP.opponent+'...';}
+      _setOnlineStatus('⏳ Waiting for '+window._fwMP.opponent+' to pick the map...');
+    } else {
+      // P1: pick and confirm normally
+      _setOnlineStatus('🗺️ Pick the battlefield!');
+    }
+  }
 }
 
 function buildMapGrid(){
@@ -1690,13 +1702,17 @@ function updateMapUI(){
 
 function confirmMap(){
   if(!selectedMap)return;
-  // In multiplayer, only P1 confirms map and sends it
-  // P2 just waits for the map_select action
-  if(window._fwMP?.active && window._fwMP.slot === 'p2'){
-    // P2 receives map via _mpReceiveAction, startBattle called there
-    return;
+  if(window._fwMP?.active){
+    if(window._fwMP.slot==='p2'){
+      _setOnlineStatus('⏳ Waiting for '+window._fwMP.opponent+' to confirm map...');
+      return;
+    }
+    // P1: send map to P2 then start
+    _mpSyncMapSelect(selectedMap);
+    showPreBattleAchs(p1Char,p2Char,()=>startBattle());
+  } else {
+    showPreBattleAchs(p1Char,p2Char,()=>startBattle());
   }
-  showPreBattleAchs(p1Char,p2Char,()=>startBattle());
 }
 
 function applyMap(mapId){
@@ -3896,7 +3912,26 @@ function skipLogin(){
 initProgress();
 // Show login screen if not logged in
 if(!FW_TOKEN){showScreen('login-screen');}else{showScreen('title-screen');}
-function showSelect(){p1Char=null;p2Char=null;selectedMap=null;buildGrids();updateSelectUI();updateCharCards();showScreen('select-screen');}
+function showSelect(){
+  p1Char=null;p2Char=null;selectedMap=null;
+  buildGrids();
+  updateSelectUI();
+  updateCharCards();
+  showScreen('select-screen');
+  // In MP: lock opponent's grid, show instructions
+  if(window._fwMP?.active){
+    const mySlot=window._fwMP.slot;
+    const oppSlot=mySlot==='p1'?'p2':'p1';
+    const oppGrid=document.getElementById(oppSlot+'-grid');
+    if(oppGrid){
+      oppGrid.style.opacity='0.35';
+      oppGrid.style.pointerEvents='none';
+    }
+    const oppLabel=document.querySelector(`#${oppSlot}-grid`)?.closest('.player-col')?.querySelector('h3');
+    if(oppLabel) oppLabel.textContent=window._fwMP.opponent+' (opponent)';
+    _setOnlineStatus('Pick your fighter — waiting for '+window._fwMP.opponent+'...');
+  }
+}
 
 // Credits auto-dismiss
 (function(){
@@ -3918,6 +3953,8 @@ function buildGrids(){
   });
 }
 function selectChar(p,id){
+  // In multiplayer, only allow selecting your own slot
+  if(window._fwMP?.active && p!==window._fwMP.slot) return;
   if(p==='p1')p1Char=id;else p2Char=id;
   ['p1','p2'].forEach(px=>{document.querySelectorAll(`#${px}-grid .char-card`).forEach(c=>c.classList.toggle('selected',c.dataset.id===(px==='p1'?p1Char:p2Char)));});
   updateSelectUI();
@@ -3926,10 +3963,24 @@ function selectChar(p,id){
 function updateSelectUI(){
   const c1=CHARS.find(c=>c.id===p1Char),c2=CHARS.find(c=>c.id===p2Char);
   const btn=document.getElementById('fight-btn'),sum=document.getElementById('select-summary'),prev=document.getElementById('match-preview');
-  if(c1&&c2){sum.textContent=`${c1.name} vs ${c2.name} — both 200 HP`;prev.textContent=`${c1.title}\n—\n${c2.title}`;btn.disabled=false;}
-  else if(c1){sum.textContent=`${c1.name} ready — P2 choose`;prev.textContent='';btn.disabled=true;}
-  else if(c2){sum.textContent=`P1 choose — ${c2.name} ready`;prev.textContent='';btn.disabled=true;}
-  else{sum.textContent='Select a fighter for each player';prev.textContent='';btn.disabled=true;}
+  const mp=window._fwMP?.active;
+  if(c1&&c2){
+    sum.textContent=mp?`You: ${(mp&&window._fwMP.slot==='p2'?c2:c1).name} vs ${window._fwMP?.opponent||'P2'}: ${(mp&&window._fwMP.slot==='p2'?c1:c2).name}`:`${c1.name} vs ${c2.name}`;
+    if(prev)prev.textContent=`${c1.title}\n—\n${c2.title}`;
+    btn.disabled=false;
+    if(mp)_setOnlineStatus('Both fighters chosen! '+(window._fwMP.slot==='p1'?'Select map →':'Waiting for '+window._fwMP.opponent+' to select map...'));
+  } else if(c1){
+    sum.textContent=mp?`You chose ${window._fwMP.slot==='p1'?c1.name:c1.name} — waiting for opponent...`:`${c1.name} ready — P2 choose`;
+    if(prev)prev.textContent='';btn.disabled=true;
+    if(mp)_setOnlineStatus('Waiting for '+window._fwMP.opponent+' to pick...');
+  } else if(c2){
+    sum.textContent=mp?`You chose ${window._fwMP.slot==='p2'?c2.name:c2.name} — waiting for opponent...`:`P1 choose — ${c2.name} ready`;
+    if(prev)prev.textContent='';btn.disabled=true;
+    if(mp)_setOnlineStatus('Waiting for '+window._fwMP.opponent+' to pick...');
+  } else {
+    sum.textContent=mp?'Pick your fighter!':'Select a fighter for each player';
+    if(prev)prev.textContent='';btn.disabled=true;
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -4897,16 +4948,32 @@ function _mpReceiveAction(action){
   const opp=window._fwMP.slot==='p1'?'p2':'p1';
   if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial);
   else if(action.type==='block') doBlock(opp);
-  else if(action.type==='heal')  doHeal(opp);
+  else if(action.type==='heal') doHeal(opp);
   else if(action.type==='char_select'){
+    // Opponent picked their character
     if(window._fwMP.slot==='p1') p2Char=action.charId;
     else p1Char=action.charId;
+    // Update their grid highlight
+    const oppGrid=document.getElementById(opp+'-grid');
+    if(oppGrid) oppGrid.querySelectorAll('.char-card').forEach(cd=>{
+      cd.classList.toggle('selected',cd.dataset.id===action.charId);
+    });
     updateSelectUI();
-    _setOnlineStatus('Opponent chose their fighter!');
+    _setOnlineStatus('⚔ '+window._fwMP.opponent+' chose their fighter!');
   }
   else if(action.type==='map_select'){
+    // P1 picked map — P2 starts battle
     selectedMap=action.mapId;
-    showPreBattleAchs(p1Char,p2Char,()=>startBattle());
+    // Highlight the map on P2's screen briefly then start
+    document.querySelectorAll('.map-card').forEach(mc=>{
+      mc.classList.toggle('selected',mc.dataset.id===action.mapId);
+    });
+    _setOnlineStatus('🗺 Map chosen! Starting battle...');
+    setTimeout(()=>showPreBattleAchs(p1Char,p2Char,()=>startBattle()),800);
+  }
+  else if(action.type==='opponent_disconnected'){
+    _setOnlineStatus('❌ Opponent disconnected');
+    window._fwMP={active:false};
   }
 }
 
