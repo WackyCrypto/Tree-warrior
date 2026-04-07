@@ -3672,7 +3672,7 @@ async function fwLogin(login,password){
 function fwLogout(){
   FW_TOKEN=null;FW_USER=null;
   localStorage.removeItem('fw_token');localStorage.removeItem('fw_user');
-  if(FW_WS){FW_WS.close();FW_WS=null;}
+  fwStopPolling();
   _updateTitleUI();
 }
 function _persistAuth(){
@@ -3830,9 +3830,7 @@ function _updateTitleUI(){
   // Update WS dot
   const dot=document.getElementById('ws-dot');
   if(dot){
-    const ok=FW_WS&&FW_WS.readyState===1;
-    dot.textContent=ok?'🟢':'🔴';
-    dot.title=ok?'Connected':'Disconnected — tap Find Match to reconnect';
+      if(dot)dot.textContent=FW_TOKEN?'🟢':'⚫';
   }
 }
 
@@ -4922,7 +4920,7 @@ function _mpSyncMapSelect(id){
 }
 
 // ── Init ──
-(function(){if(FW_TOKEN)fwConnect();_updateTitleUI();})();
+(function(){_updateTitleUI();if(FW_TOKEN)fwSyncProgress();})();
 initProgress();
 if(!FW_TOKEN){showScreen('login-screen');}else{showTitle();}
 </script>
