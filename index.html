@@ -3945,11 +3945,27 @@ function showSelect(){
 function buildGrids(){
   ['p1','p2'].forEach(p=>{
     const g=document.getElementById(`${p}-grid`);g.innerHTML='';
-    CHARS.forEach(c=>{
-      const card=document.createElement('div');card.className='char-card';card.dataset.id=c.id;
-      card.innerHTML=`<div class="char-preview">${getCharSVG(c.id)}</div><div class="char-card-name">${c.name}</div><div class="char-card-stats">${c.desc}</div>`;
-      card.onclick=()=>selectChar(p,c.id);g.appendChild(card);
+    const mySlot=window._fwMP?.active?window._fwMP.slot:null;
+    const isMySlot=!mySlot||(p===mySlot);
+    CHARS.forEach(ch=>{
+      const card=document.createElement('div');card.className='char-card';card.dataset.id=ch.id;
+      card.innerHTML=`<div class="char-preview">${getCharSVG(ch.id)}</div><div class="char-card-name">${ch.name}</div><div class="char-card-stats">${ch.desc}</div>`;
+      if(isMySlot){
+        card.onclick=()=>selectChar(p,ch.id);
+      } else {
+        card.style.opacity='0.35';
+        card.style.cursor='not-allowed';
+        card.onclick=null;
+      }
+      g.appendChild(card);
     });
+    // Label opponent grid
+    if(mySlot && !isMySlot){
+      const hdr=document.createElement('div');
+      hdr.style.cssText='text-align:center;font-size:.5rem;color:rgba(240,232,208,.4);padding:.2rem;';
+      hdr.textContent=window._fwMP.opponent+" (opponent — picking now...)";
+      g.prepend(hdr);
+    }
   });
 }
 function selectChar(p,id){
@@ -4046,10 +4062,10 @@ function buildBtns(player,char){
 // ═══════════════════════════════════════════════
 //  BLOCK ACTION
 // ═══════════════════════════════════════════════
-function doBlock(player){
+function doBlock(player,fromRemote=false){
   triggerBlockVignette(player);
   if(busy)return;
-  if(window._fwMP?.active){
+  if(window._fwMP?.active && !fromRemote){
     if(player!==window._fwMP.slot){return;}
     fwSendAction({type:'block'});
   }
@@ -4090,9 +4106,9 @@ function doBlock(player){
 // ═══════════════════════════════════════════════
 //  HEAL ACTION
 // ═══════════════════════════════════════════════
-function doHeal(player){
+function doHeal(player,fromRemote=false){
   if(busy)return;
-  if(window._fwMP?.active){
+  if(window._fwMP?.active && !fromRemote){
     if(player!==window._fwMP.slot){return;}
     fwSendAction({type:'heal'});
   }
@@ -4175,13 +4191,12 @@ function spawnHealParticles(x,y){
 // ═══════════════════════════════════════════════
 //  ATTACK ACTION
 // ═══════════════════════════════════════════════
-function doAttack(player,atkIdx,isSpecial){
+function doAttack(player,atkIdx,isSpecial,fromRemote=false){
   if(busy)return;
-  // Multiplayer: only allow your slot to act, then broadcast
-  if(window._fwMP?.active){
+  // Multiplayer guard
+  if(window._fwMP?.active && !fromRemote){
     if(player!==window._fwMP.slot){return;} // not your fighter
-    // Send action to opponent
-    fwSendAction({type:'attack',atkIdx,isSpecial});
+    fwSendAction({type:'attack',atkIdx,isSpecial}); // send to opponent
   }
   const pn=player==='p1'?1:2;
   if(turn!==pn){showMsg("Not your turn!",900);return;}
@@ -4946,9 +4961,9 @@ function applySkinGlow(player){
 function _mpReceiveAction(action){
   if(!action||!window._fwMP?.active)return;
   const opp=window._fwMP.slot==='p1'?'p2':'p1';
-  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial);
-  else if(action.type==='block') doBlock(opp);
-  else if(action.type==='heal') doHeal(opp);
+  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial,true);
+  else if(action.type==='block') doBlock(opp,true);
+  else if(action.type==='heal') doHeal(opp,true);
   else if(action.type==='char_select'){
     // Opponent picked their character
     if(window._fwMP.slot==='p1') p2Char=action.charId;
