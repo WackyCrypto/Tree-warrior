@@ -20,8 +20,8 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
 .screen.hidden{opacity:0;pointer-events:none;}
 
 /* ════ CREDITS ════ */
-#credits-overlay{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;}
-#credits-overlay.fade-out{animation:credFade .7s ease forwards;}
+#credits-overlay{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;transition:opacity .4s ease;}
+#credits-overlay.fade-out{animation:credFade .7s ease forwards;pointer-events:none;}
 @keyframes credFade{to{opacity:0;pointer-events:none;}}
 .cred-line{font-family:'Cinzel Decorative',serif;text-align:center;opacity:0;animation:credReveal 1s ease forwards;}
 .cred-line:nth-child(1){font-size:clamp(.7rem,1.8vw,1rem);letter-spacing:.3em;color:rgba(240,232,208,.8);animation-delay:.4s;}
@@ -3799,11 +3799,8 @@ function _updateTitleUI(){
   if(logoutBtn) logoutBtn.style.display=loggedIn?'block':'none';
   if(signinBtn) signinBtn.style.display=loggedIn?'none':'block';
   if(onlinePanel) onlinePanel.style.display=loggedIn?'flex':'none';
-  // Update WS dot
   const dot=document.getElementById('ws-dot');
-  if(dot){
-      if(dot)dot.textContent=FW_TOKEN?'🟢':'⚫';
-  }
+  if(dot) dot.textContent=FW_TOKEN?'🟢':'⚫';
 }
 
 // ── Login screen UI ──
@@ -4920,11 +4917,12 @@ async function fwSendAction(action){
 
 function dismissCredits(){
   const ov=document.getElementById('credits-overlay');
-  if(!ov)return;
-  ov.style.animation='none';
+  if(!ov||ov.style.display==='none')return;
+  ov.style.transition='opacity 0.4s ease';
   ov.style.opacity='0';
   ov.style.pointerEvents='none';
-  setTimeout(()=>{ov.style.display='none';},400);
+  ov.style.zIndex='-1';
+  setTimeout(()=>{ov.style.display='none';},450);
 }
 
 // ── Init ──
