@@ -3727,7 +3727,7 @@ async function _doPoll(){
   }
 }
 
-async function fwFindMatch(){
+async async function fwFindMatch(){
   if(!FW_TOKEN){alert('Please sign in first!');return;}
   fwStopPolling();
   window._fwMP={active:false};
@@ -3746,7 +3746,7 @@ async function fwFindMatch(){
   _pollTimer=setInterval(_doPoll,_pollInterval);
 }
 
-async function fwCreateRoom(){
+async async function fwCreateRoom(){
   if(!FW_TOKEN){alert('Please sign in first!');return;}
   fwStopPolling();
   const data=await apiPost('/mp/room/create',{},true);
@@ -3772,7 +3772,7 @@ function showJoinRoom(){
   }
 }
 
-async function fwJoinRoom(code){
+async async function fwJoinRoom(code){
   if(!FW_TOKEN){alert('Please sign in first!');return;}
   fwStopPolling();
   _setOnlineStatus('🔄 Joining room '+code+'...');
