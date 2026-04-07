@@ -4891,6 +4891,33 @@ function _mpSyncMapSelect(id){
   if(window._fwMP.slot==='p1') fwSendAction({type:'map_select',mapId:id});
 }
 
+async function fwCreateRoom(){
+  if(!FW_TOKEN){alert('Sign in first!');return;}
+  fwStopPolling();
+  const d=await apiPost('/mp/room/create',{},true);
+  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+  window._fwMP={active:false,roomCode:d.roomCode};
+  const el=document.getElementById('room-code-display');
+  if(el){el.textContent='Room: '+d.roomCode;el.style.display='block';}
+  _setOnlineStatus('🏠 Code: '+d.roomCode+' — share with friend!');
+  _pollTimer=setInterval(_doPoll,_pollInterval);
+}
+async function fwJoinRoom(code){
+  if(!FW_TOKEN){alert('Sign in first!');return;}
+  fwStopPolling();
+  _setOnlineStatus('🔄 Joining '+code+'...');
+  const d=await apiPost('/mp/room/join',{code:code},true);
+  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+  window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+  _setOnlineStatus('⚔ Joined vs '+d.opponent+'!');
+  setTimeout(()=>showSelect(),1800);
+  _pollTimer=setInterval(_doPoll,_pollInterval);
+}
+async function fwSendAction(action){
+  if(!FW_TOKEN||!window._fwMP?.active)return;
+  await apiPost('/mp/action',{action:action},true);
+}
+
 // ── Init ──
 (function(){_updateTitleUI();if(FW_TOKEN)fwSyncProgress();})();
 initProgress();
