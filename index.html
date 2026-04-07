@@ -4917,3 +4917,223 @@ if(!FW_TOKEN){showScreen('login-screen');}else{showTitle();}
 </script>
 </body>
 </html>
+// ═══════════════════════════════════════════════════════════════
+//  NETWORK — HTTP POLLING (no WebSockets needed)
+// ═══════════════════════════════════════════════════════════════
+const FW_SERVER='https://forest-warriors-server-production.up.railway.app';
+let FW_TOKEN=localStorage.getItem('fw_token')||null;
+let FW_USER=JSON.parse(localStorage.getItem('fw_user')||'null');
+
+// ── REST helpers ──
+async function apiPost(path,body,auth=false){
+  const h={'Content-Type':'application/json'};
+  if(auth&&FW_TOKEN)h.Authorization='Bearer '+FW_TOKEN;
+  try{const r=await fetch(FW_SERVER+path,{method:'POST',headers:h,body:JSON.stringify(body)});return r.json();}
+  catch(e){return{error:'Cannot reach server'};}
+}
+async function apiGet(path,auth=false){
+  const h={};if(auth&&FW_TOKEN)h.Authorization='Bearer '+FW_TOKEN;
+  try{const r=await fetch(FW_SERVER+path,{headers:h});return r.json();}
+  catch(e){return{error:'Cannot reach server'};}
+}
+
+// ── Auth ──
+async function fwRegister(username,email,password){
+  const d=await apiPost('/auth/register',{username,email,password});
+  if(d.token){FW_TOKEN=d.token;FW_USER=d.user;localStorage.setItem('fw_token',FW_TOKEN);localStorage.setItem('fw_user',JSON.stringify(FW_USER));}
+  return d;
+}
+async function fwLogin(login,password){
+  const d=await apiPost('/auth/login',{login,password});
+  if(d.token){FW_TOKEN=d.token;FW_USER=d.user;localStorage.setItem('fw_token',FW_TOKEN);localStorage.setItem('fw_user',JSON.stringify(FW_USER));}
+  return d;
+}
+function fwLogout(){
+  FW_TOKEN=null;FW_USER=null;
+  localStorage.removeItem('fw_token');localStorage.removeItem('fw_user');
+  fwStopPolling();
+  window._fwMP={active:false};
+  _updateTitleUI();showScreen('login-screen');
+}
+
+// ── Progress ──
+async function fwSyncProgress(){
+  if(!FW_TOKEN)return;
+  const remote=await apiGet('/progress',true);
+  if(remote&&!remote.error){
+    if(remote.treeBucks>PROGRESS.treeBucks)PROGRESS.treeBucks=remote.treeBucks;
+    if(remote.totalWins>PROGRESS.totalWins)PROGRESS.totalWins=remote.totalWins;
+    if(remote.chars)Object.entries(remote.chars).forEach(([id,v])=>{
+      if(!PROGRESS.chars[id])PROGRESS.chars[id]={xp:0,level:0,wins:0,battles:0};
+      const l=PROGRESS.chars[id];if(v.xp>l.xp){l.xp=v.xp;l.level=v.level;}if(v.wins>l.wins)l.wins=v.wins;
+    });
+    if(remote.ownedSkins)Object.assign(PROGRESS.ownedSkins,remote.ownedSkins);
+    if(remote.equippedSkins)Object.assign(PROGRESS.equippedSkins,remote.equippedSkins);
+    saveProgress(PROGRESS);updateWalletUI();
+  }
+}
+async function fwPushProgress(){
+  if(!FW_TOKEN)return;
+  await apiPost('/progress/save',PROGRESS,true);
+}
+
+// ── HTTP Polling matchmaking ──
+let _pollTimer=null;
+let _pollInterval=2500; // ms between polls
+
+function fwStopPolling(){
+  if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}
+}
+
+async function _doPoll(){
+  if(!FW_TOKEN)return;
+  const data=await apiGet('/mp/poll',true);
+  if(!data||data.error)return;
+
+  if(data.status==='matched'&&!window._fwMP?.active){
+    // Just matched!
+    fwStopPolling();
+    window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
+    _setOnlineStatus('⚔ Matched vs '+data.opponent+'! You are '+data.slot.toUpperCase());
+    // Process any immediate actions
+    if(data.actions&&data.actions.length) data.actions.forEach(_mpReceiveAction);
+    setTimeout(()=>showSelect(),1800);
+    // Restart polling for game actions
+    _pollTimer=setInterval(_doPoll,_pollInterval);
+    return;
+  }
+
+  if(data.status==='matched'&&window._fwMP?.active){
+    // Already in game — process incoming actions
+    if(data.actions&&data.actions.length) data.actions.forEach(_mpReceiveAction);
+  }
+
+  if(data.status==='waiting'){
+    _setOnlineStatus('🔍 Searching for opponent...');
+  }
+}
+
+async function fwFindMatch(){
+  if(!FW_TOKEN){alert('Please sign in first!');return;}
+  fwStopPolling();
+  window._fwMP={active:false};
+  _setOnlineStatus('🔄 Joining queue...');
+  const data=await apiPost('/mp/queue',{},true);
+  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
+  if(data.status==='matched'){
+    // Instantly matched
+    window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
+    _setOnlineStatus('⚔ Matched vs '+data.opponent+'!');
+    setTimeout(()=>showSelect(),1800);
+  } else {
+    _setOnlineStatus('🔍 Searching... (waiting for opponent)');
+  }
+  // Start polling regardless
+  _pollTimer=setInterval(_doPoll,_pollInterval);
+}
+
+async function fwCreateRoom(){
+  if(!FW_TOKEN){alert('Please sign in first!');return;}
+  fwStopPolling();
+  const data=await apiPost('/mp/room/create',{},true);
+  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
+  window._fwMP={active:false,roomCode:data.roomCode};
+  const el=document.getElementById('room-code-display');
+  if(el){el.textContent='Room: '+data.roomCode;el.style.display='block';}
+  _setOnlineStatus('🏠 Share code: '+data.roomCode);
+  _pollTimer=setInterval(_doPoll,_pollInterval);
+}
+
+function showJoinRoom(){
+  const inp=document.getElementById('room-code-input');if(!inp)return;
+  inp.style.display=inp.style.display==='none'||!inp.style.display?'block':'none';
+  if(inp.style.display==='block'){
+    inp.focus();
+    inp.onkeydown=async e=>{
+      if(e.key==='Enter'&&inp.value.length>=4){
+        await fwJoinRoom(inp.value.trim().toUpperCase());
+        inp.style.display='none';
+      }
+    };
+  }
+}
+
+async function fwJoinRoom(code){
+  if(!FW_TOKEN){alert('Please sign in first!');return;}
+  fwStopPolling();
+  _setOnlineStatus('🔄 Joining room '+code+'...');
+  const data=await apiPost('/mp/room/join',{code},true);
+  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
+  window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
+  _setOnlineStatus('⚔ Joined! vs '+data.opponent);
+  setTimeout(()=>showSelect(),1800);
+  _pollTimer=setInterval(_doPoll,_pollInterval);
+}
+
+async function fwSendAction(action){
+  if(!FW_TOKEN||!window._fwMP?.active)return;
+  await apiPost('/mp/action',{action},true);
+}
+
+function fwConnect(){
+  // No-op: we use HTTP polling now, no WebSocket needed
+  _updateTitleUI();
+  fwSyncProgress();
+}
+
+// ── UI helpers ──
+function _setOnlineStatus(msg){
+  const el=document.getElementById('online-status');
+  if(el)el.textContent=msg;
+}
+function _updateTitleUI(){
+  const loggedIn=!!FW_USER;
+  const ui=document.getElementById('title-user-info');
+  const out=document.getElementById('title-logout-btn');
+  const signin=document.getElementById('title-signin-btn');
+  const panel=document.getElementById('online-panel');
+  const dot=document.getElementById('ws-dot');
+  if(ui){ui.textContent=loggedIn?'👤 '+FW_USER.username:'';ui.style.display=loggedIn?'block':'none';}
+  if(out)out.style.display=loggedIn?'block':'none';
+  if(signin)signin.style.display=loggedIn?'none':'block';
+  if(panel)panel.style.display=loggedIn?'flex':'none';
+  if(dot)dot.textContent=loggedIn?'🟢':'⚫';
+}
+
+// ── Login UI ──
+let _loginTab='login';
+function switchLoginTab(tab){
+  _loginTab=tab;
+  document.getElementById('tab-login').classList.toggle('active',tab==='login');
+  document.getElementById('tab-register').classList.toggle('active',tab==='register');
+  document.getElementById('form-login').style.display=tab==='login'?'':'none';
+  document.getElementById('form-register').style.display=tab==='register'?'':'none';
+  document.getElementById('login-submit-btn').textContent=tab==='login'?'SIGN IN':'CREATE ACCOUNT';
+  document.getElementById('login-error').textContent='';
+}
+async function submitLogin(){
+  const btn=document.getElementById('login-submit-btn');
+  const errEl=document.getElementById('login-error');
+  btn.disabled=true;btn.textContent='...';errEl.textContent='';
+  let result;
+  if(_loginTab==='login'){
+    const login=document.getElementById('login-username').value.trim();
+    const pw=document.getElementById('login-password').value;
+    if(!login||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='SIGN IN';return;}
+    result=await fwLogin(login,pw);
+  }else{
+    const username=document.getElementById('reg-username').value.trim();
+    const email=document.getElementById('reg-email').value.trim();
+    const pw=document.getElementById('reg-password').value;
+    if(!username||!email||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='CREATE ACCOUNT';return;}
+    result=await fwRegister(username,email,pw);
+  }
+  if(result.error){
+    errEl.textContent=result.error;btn.disabled=false;
+    btn.textContent=_loginTab==='login'?'SIGN IN':'CREATE ACCOUNT';
+  }else{
+    _updateTitleUI();fwSyncProgress();showTitle();
+  }
+}
+function skipLogin(){showTitle();}
+
