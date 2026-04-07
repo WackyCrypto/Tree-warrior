@@ -3730,20 +3730,16 @@ async function _doPoll(){
   if(d.status==='waiting')_setOnlineStatus('🔍 Searching...');
 }
 async function fwFindMatch(){
-  alert('FW_TOKEN='+(FW_TOKEN?'YES':'NO')+' FW_USER='+(FW_USER?FW_USER.username:'NULL'));
   if(!FW_TOKEN){alert('Sign in first!');return;}
   fwStopPolling();window._fwMP={active:false};
   _setOnlineStatus('🔄 Joining queue...');
-  try{
-    const d=await apiPost('/mp/queue',{},true);
-    alert('Queue result: '+JSON.stringify(d));
-    if(d.error){_setOnlineStatus('❌ '+d.error);return;}
-    if(d.status==='matched'){
-      window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-      _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');setTimeout(()=>showSelect(),1800);
-    }else{_setOnlineStatus('🔍 Searching...');}
-    _pollTimer=setInterval(_doPoll,_pollInterval);
-  }catch(e){alert('ERROR: '+e.message);}
+  const d=await apiPost('/mp/queue',{},true);
+  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+  if(d.status==='matched'){
+    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+    _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');setTimeout(()=>showSelect(),1800);
+  }else{_setOnlineStatus('🔍 Searching...');}
+  _pollTimer=setInterval(_doPoll,_pollInterval);
 }
 
 function showJoinRoom(){
@@ -4922,8 +4918,27 @@ async function fwSendAction(action){
   await apiPost('/mp/action',{action:action},true);
 }
 
+function dismissCredits(){
+  const ov=document.getElementById('credits-overlay');
+  if(!ov)return;
+  ov.style.animation='none';
+  ov.style.opacity='0';
+  ov.style.pointerEvents='none';
+  setTimeout(()=>{ov.style.display='none';},400);
+}
+
 // ── Init ──
-(function(){_updateTitleUI();if(FW_TOKEN)fwSyncProgress();})();
+(function(){
+  _updateTitleUI();
+  if(FW_TOKEN)fwSyncProgress();
+  // Auto-dismiss credits after 2s, clickable to skip
+  const ov=document.getElementById('credits-overlay');
+  if(ov){
+    ov.style.cursor='pointer';
+    ov.onclick=dismissCredits;
+    setTimeout(dismissCredits,2000);
+  }
+})();
 initProgress();
 if(!FW_TOKEN){showScreen('login-screen');}else{showTitle();}
 </script>
