@@ -3730,16 +3730,20 @@ async function _doPoll(){
   if(d.status==='waiting')_setOnlineStatus('🔍 Searching...');
 }
 async function fwFindMatch(){
+  alert('FW_TOKEN='+(FW_TOKEN?'YES':'NO')+' FW_USER='+(FW_USER?FW_USER.username:'NULL'));
   if(!FW_TOKEN){alert('Sign in first!');return;}
   fwStopPolling();window._fwMP={active:false};
   _setOnlineStatus('🔄 Joining queue...');
-  const d=await apiPost('/mp/queue',{},true);
-  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
-  if(d.status==='matched'){
-    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-    _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');setTimeout(()=>showSelect(),1800);
-  }else{_setOnlineStatus('🔍 Searching...');}
-  _pollTimer=setInterval(_doPoll,_pollInterval);
+  try{
+    const d=await apiPost('/mp/queue',{},true);
+    alert('Queue result: '+JSON.stringify(d));
+    if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+    if(d.status==='matched'){
+      window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+      _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');setTimeout(()=>showSelect(),1800);
+    }else{_setOnlineStatus('🔍 Searching...');}
+    _pollTimer=setInterval(_doPoll,_pollInterval);
+  }catch(e){alert('ERROR: '+e.message);}
 }
 
 function showJoinRoom(){
