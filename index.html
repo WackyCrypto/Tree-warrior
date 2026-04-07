@@ -3729,47 +3729,19 @@ async function _doPoll(){
   if(d.status==='matched'&&window._fwMP?.active&&d.actions&&d.actions.length)d.actions.forEach(_mpReceiveAction);
   if(d.status==='waiting')_setOnlineStatus('🔍 Searching...');
 }
-function fwFindMatch(){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
-  _setOnlineStatus('🔄 Connecting...');
-  if(!FW_WS||FW_WS.readyState!==1){
-    fwConnect();
-    setTimeout(()=>{
-      if(FW_WS&&FW_WS.readyState===1){
-        _wsSend({type:'find_match'});
-        _setOnlineStatus('🔍 Searching for opponent...');
-      } else {
-        _setOnlineStatus('❌ Cannot connect. Try again.');
-      }
-    },2500);
-  } else {
-    _wsSend({type:'find_match'});
-    _setOnlineStatus('🔍 Searching for opponent...');
-  }
-}
-async function fwCreateRoom(){
+async function fwFindMatch(){
   if(!FW_TOKEN){alert('Sign in first!');return;}
-  fwStopPolling();
-  const d=await apiPost('/mp/room/create',{},true);
+  fwStopPolling();window._fwMP={active:false};
+  _setOnlineStatus('🔄 Joining queue...');
+  const d=await apiPost('/mp/queue',{},true);
   if(d.error){_setOnlineStatus('❌ '+d.error);return;}
-  window._fwMP={active:false,roomCode:d.roomCode};
-  const el=document.getElementById('room-code-display');
-  if(el){el.textContent='Room: '+d.roomCode;el.style.display='block';}
-  _setOnlineStatus('🏠 Code: '+d.roomCode+' — share with friend!');
+  if(d.status==='matched'){
+    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+    _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');setTimeout(()=>showSelect(),1800);
+  }else{_setOnlineStatus('🔍 Searching...');}
   _pollTimer=setInterval(_doPoll,_pollInterval);
 }
-async function fwJoinRoom(code){
-  if(!FW_TOKEN){alert('Sign in first!');return;}
-  fwStopPolling();
-  _setOnlineStatus('🔄 Joining '+code+'...');
-  const d=await apiPost('/mp/room/join',{code},true);
-  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
-  window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-  _setOnlineStatus('⚔ Joined vs '+d.opponent+'!');
-  setTimeout(()=>showSelect(),1800);
-  _pollTimer=setInterval(_doPoll,_pollInterval);
-}
-async function fwSendAction(action){if(!FW_TOKEN||!window._fwMP?.active)return;await apiPost('/mp/action',{action},true);}
+
 function showJoinRoom(){
   const inp=document.getElementById('room-code-input');
   if(!inp)return;
