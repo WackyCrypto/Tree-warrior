@@ -3745,6 +3745,30 @@ async function fwPushProgress(){
 // ── WebSocket ──
 function fwConnect(){_updateTitleUI();fwSyncProgress();}
 function fwStopPolling(){if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}}
+// ── MP action queue — processes one action at a time ──
+let _mpActionQueue=[];
+let _mpProcessing=false;
+function _mpQueueAction(action){
+  _mpActionQueue.push(action);
+  _mpProcessNextAction();
+}
+function _mpProcessNextAction(){
+  if(_mpProcessing||_mpActionQueue.length===0)return;
+  _mpProcessing=true;
+  const action=_mpActionQueue.shift();
+  _mpReceiveAction(action);
+  // Wait for busy to clear before processing next action
+  const waitForFree=()=>{
+    if(!busy){
+      _mpProcessing=false;
+      setTimeout(_mpProcessNextAction,100);
+    } else {
+      setTimeout(waitForFree,150);
+    }
+  };
+  setTimeout(waitForFree,200);
+}
+
 async function _doPoll(){
   if(!FW_TOKEN)return;
   const d=await apiGet('/mp/poll',true);
@@ -3753,11 +3777,13 @@ async function _doPoll(){
     fwStopPolling();
     window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
     _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');
-    if(d.actions&&d.actions.length)d.actions.forEach(_mpReceiveAction);
+    if(d.actions&&d.actions.length)d.actions.forEach(_mpQueueAction);
     setTimeout(()=>showSelect(),1800);
     _pollTimer=setInterval(_doPoll,_pollInterval);return;
   }
-  if(d.status==='matched'&&window._fwMP?.active&&d.actions&&d.actions.length)d.actions.forEach(_mpReceiveAction);
+  if(d.status==='matched'&&window._fwMP?.active&&d.actions&&d.actions.length){
+    d.actions.forEach(_mpQueueAction);
+  }
   if(d.status==='waiting')_setOnlineStatus('🔍 Searching...');
 }
 async function fwFindMatch(){
@@ -3918,6 +3944,8 @@ function showSelect(){
   updateSelectUI();
   updateCharCards();
   showScreen('select-screen');
+  // Reset MP action queue
+  _mpActionQueue=[];_mpProcessing=false;
   // In MP: lock opponent's grid, show instructions
   if(window._fwMP?.active){
     const mySlot=window._fwMP.slot;
@@ -4488,6 +4516,8 @@ function advanceTurn(){
   }
 
   busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
+  // Safety: clear any stuck MP processing
+  if(window._fwMP?.active){_mpProcessing=false;setTimeout(_mpProcessNextAction,50);}
 }
 
 // ═══════════════════════════════════════════════
