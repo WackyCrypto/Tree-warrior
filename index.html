@@ -4062,7 +4062,7 @@ function buildBtns(player,char){
 // ═══════════════════════════════════════════════
 //  BLOCK ACTION
 // ═══════════════════════════════════════════════
-function doBlock(player,fromRemote=false){
+function doBlock(player,fromRemote=false,remoteCd=null){
   triggerBlockVignette(player);
   if(busy)return;
   if(window._fwMP?.active && !fromRemote){
@@ -4106,11 +4106,14 @@ function doBlock(player,fromRemote=false){
 // ═══════════════════════════════════════════════
 //  HEAL ACTION
 // ═══════════════════════════════════════════════
-function doHeal(player,fromRemote=false){
+function doHeal(player,fromRemote=false,remoteHealCd=null){
   if(busy)return;
   if(window._fwMP?.active && !fromRemote){
     if(player!==window._fwMP.slot){return;}
-    fwSendAction({type:'heal'});
+    const _hcd=Math.floor(Math.random()*3)+2;
+    fwSendAction({type:'heal',healCd:_hcd});
+    // Use the computed value locally too
+    if(player==='p1') p1HealCooldown=_hcd; else p2HealCooldown=_hcd;
   }
   const pn=player==='p1'?1:2;
   if(turn!==pn){showMsg("Not your turn!",900);return;}
@@ -4127,13 +4130,13 @@ function doHeal(player,fromRemote=false){
   triggerHealVignette(player);
   if(player==='p1'){
     p1HP=Math.min(maxHP,p1HP+healAmt);
-    p1HealCooldown=Math.floor(Math.random()*3)+2; // 2-4
+    if(remoteHealCd) p1HealCooldown=remoteHealCd;
     p1SkipTurn=true;
     p1DmgReduced=true;
     p1Heals++;
   } else {
     p2HP=Math.min(maxHP,p2HP+healAmt);
-    p2HealCooldown=Math.floor(Math.random()*3)+2;
+    if(remoteHealCd) p2HealCooldown=remoteHealCd;
     p2SkipTurn=true;
     p2DmgReduced=true;
     p2Heals++;
@@ -4191,12 +4194,12 @@ function spawnHealParticles(x,y){
 // ═══════════════════════════════════════════════
 //  ATTACK ACTION
 // ═══════════════════════════════════════════════
-function doAttack(player,atkIdx,isSpecial,fromRemote=false){
+function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null){
   if(busy)return;
   // Multiplayer guard
   if(window._fwMP?.active && !fromRemote){
     if(player!==window._fwMP.slot){return;} // not your fighter
-    fwSendAction({type:'attack',atkIdx,isSpecial}); // send to opponent
+    // Note: action sent AFTER dmg computed below
   }
   const pn=player==='p1'?1:2;
   if(turn!==pn){showMsg("Not your turn!",900);return;}
@@ -4219,7 +4222,11 @@ function doAttack(player,atkIdx,isSpecial,fromRemote=false){
   totalRounds++;
 
   const atk=isSpecial?attC.special:attC.attacks[atkIdx];
-  let dmg=Math.floor(Math.random()*(atk.dmg[1]-atk.dmg[0]+1))+atk.dmg[0];
+  let dmg=remoteDmg!==null?remoteDmg:Math.floor(Math.random()*(atk.dmg[1]-atk.dmg[0]+1))+atk.dmg[0];
+  // In MP: now send with computed dmg so both sides use same value
+  if(window._fwMP?.active && !fromRemote){
+    fwSendAction({type:'attack',atkIdx,isSpecial,dmg});
+  }
 
   // 30% damage penalty if attacker's OWN shield is broken (exposed bark)
   const attBroken=player==='p1'?p1BlockBroken:p2BlockBroken;
@@ -4375,7 +4382,7 @@ function handleBlock(attacker,defWrap,defEl,defC,dmg,isSpecial=false){
     p1BlockHP=newShieldHP;
     if(shieldBroken){
       p1Block=null;p1BlockBroken=true;
-      const cd=Math.floor(Math.random()*3)+1;
+      const cd=remoteCd||Math.floor(Math.random()*3)+1;
       p1BlockCooldown=cd;
       p1Blocks++;
       if(overflow>0) p1HP=Math.max(0,p1HP-overflow);
@@ -4385,7 +4392,7 @@ function handleBlock(attacker,defWrap,defEl,defC,dmg,isSpecial=false){
     p2BlockHP=newShieldHP;
     if(shieldBroken){
       p2Block=null;p2BlockBroken=true;
-      const cd=Math.floor(Math.random()*3)+1;
+      const cd=remoteCd||Math.floor(Math.random()*3)+1;
       p2BlockCooldown=cd;
       p2Blocks++;
       if(overflow>0) p2HP=Math.max(0,p2HP-overflow);
@@ -4700,7 +4707,9 @@ function updateTurnUI(){
     bb.disabled=!myTurn||cd>0||isBlocking;
     if(cd>0||isBlocking)bb.classList.add('on-cooldown');else bb.classList.remove('on-cooldown');
   });
-}
+
+  // MP: update turn labels
+  if(window._fwMP?.active && window._mpUpdateTurnLabels) window._mpUpdateTurnLabels();}
 function disableAllBtns(s){document.querySelectorAll('.atk-btn,.block-btn,.heal-btn').forEach(b=>b.disabled=s);}
 
 // ═══════════════════════════════════════════════
@@ -4961,9 +4970,9 @@ function applySkinGlow(player){
 function _mpReceiveAction(action){
   if(!action||!window._fwMP?.active)return;
   const opp=window._fwMP.slot==='p1'?'p2':'p1';
-  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial,true);
-  else if(action.type==='block') doBlock(opp,true);
-  else if(action.type==='heal') doHeal(opp,true);
+  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial,true,action.dmg||null);
+  else if(action.type==='block') doBlock(opp,true,action.cd||null);
+  else if(action.type==='heal') doHeal(opp,true,action.healCd||null);
   else if(action.type==='char_select'){
     // Opponent picked their character
     if(window._fwMP.slot==='p1') p2Char=action.charId;
@@ -4994,13 +5003,24 @@ function _mpReceiveAction(action){
 
 function _mpSetupBattleUI(){
   if(!window._fwMP?.active)return;
-  const opp=window._fwMP.slot==='p1'?'p2':'p1';
-  const oppCont=document.getElementById(opp+'-controls');
-  if(oppCont) oppCont.innerHTML='<div style="text-align:center;padding:.5rem;font-family:\'Cinzel Decorative\',serif;font-size:.45rem;color:rgba(240,232,208,.3);">Opponent\'s turn...</div>';
+  const me=window._fwMP.slot;
+  const opp=me==='p1'?'p2':'p1';
+  // Hide opponent's attack buttons, show waiting text instead
+  const oppBtns=document.getElementById(opp+'-btns');
+  if(oppBtns) oppBtns.innerHTML='<div style="text-align:center;padding:.8rem .3rem;color:rgba(240,232,208,.3);font-size:.5rem;">Opponent controls</div>';
+  // Label HUD names
   const oppName=document.getElementById(opp+'-hud-name');
   if(oppName) oppName.textContent=window._fwMP.opponent+' ⚔';
-  const myName=document.getElementById(window._fwMP.slot+'-hud-name');
+  const myName=document.getElementById(me+'-hud-name');
   if(myName) myName.textContent+=' (YOU)';
+  // Update turn labels to say YOUR TURN / OPPONENT TURN
+  window._mpUpdateTurnLabels=function(){
+    const myTurn=(me==='p1'&&turn===1)||(me==='p2'&&turn===2);
+    const myTurnEl=document.getElementById(me+'-turn');
+    const oppTurnEl=document.getElementById(opp+'-turn');
+    if(myTurnEl) myTurnEl.textContent=myTurn?'⚔ YOUR TURN':'Waiting...';
+    if(oppTurnEl) oppTurnEl.textContent=myTurn?'Waiting...':'⚔ Opponent\'s turn';
+  };
 }
 
 function _mpSyncCharSelect(p,id){
