@@ -3632,1299 +3632,14 @@ function updateArenaLevelTags(c1Id, c2Id){
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');const wb=document.getElementById('wallet-badge');if(wb)wb.classList.toggle('hidden-badge',id==='battle-screen');}
 function showTitle(){_updateTitleUI();showScreen('title-screen');}
 // ═══════════════════════════════════════════════════════════════
-//  FOREST WARRIORS — NETWORK LAYER
-// ═══════════════════════════════════════════════════════════════
-const FW_SERVER = 'https://forest-warriors-server-production.up.railway.app';
-const FW_WS_URL = FW_SERVER.replace('https','wss').replace('http','ws');
-
-let FW_TOKEN  = localStorage.getItem('fw_token') || null;
-let FW_USER   = JSON.parse(localStorage.getItem('fw_user') || 'null');
-let FW_WS     = null;
-let FW_WS_OK  = false;
-
-// ── REST helpers ──
-async function apiPost(path, body, auth=false){
-  const h={'Content-Type':'application/json'};
-  if(auth&&FW_TOKEN) h.Authorization='Bearer '+FW_TOKEN;
-  try{
-    const r=await fetch(FW_SERVER+path,{method:'POST',headers:h,body:JSON.stringify(body)});
-    return r.json();
-  }catch(e){return{error:'Cannot reach server'};}
-}
-async function apiGet(path, auth=false){
-  const h={};
-  if(auth&&FW_TOKEN) h.Authorization='Bearer '+FW_TOKEN;
-  try{
-    const r=await fetch(FW_SERVER+path,{headers:h});
-    return r.json();
-  }catch(e){return{error:'Cannot reach server'};}
-}
-
-// ── Auth ──
-async function fwRegister(username,email,password){
-  const d=await apiPost('/auth/register',{username,email,password});
-  if(d.token){FW_TOKEN=d.token;FW_USER=d.user;_persistAuth();fwConnect();}
-  return d;
-}
-async function fwLogin(login,password){
-  const d=await apiPost('/auth/login',{login,password});
-  if(d.token){FW_TOKEN=d.token;FW_USER=d.user;_persistAuth();fwConnect();}
-  return d;
-}
-function fwLogout(){
-  FW_TOKEN=null;FW_USER=null;
-  localStorage.removeItem('fw_token');localStorage.removeItem('fw_user');
-  if(FW_WS){FW_WS.close();FW_WS=null;}
-  _updateTitleUI();
-}
-function _persistAuth(){
-  localStorage.setItem('fw_token',FW_TOKEN);
-  localStorage.setItem('fw_user',JSON.stringify(FW_USER));
-}
-
-// ── Progress sync ──
-async function fwSyncProgress(){
-  if(!FW_TOKEN) return;
-  // Load from server and merge with local (server wins)
-  const remote=await apiGet('/progress',true);
-  if(remote&&!remote.error){
-    // Merge remote into local PROGRESS
-    if(remote.treeBucks>PROGRESS.treeBucks) PROGRESS.treeBucks=remote.treeBucks;
-    if(remote.totalWins>PROGRESS.totalWins) PROGRESS.totalWins=remote.totalWins;
-    if(remote.totalBattles>PROGRESS.totalBattles) PROGRESS.totalBattles=remote.totalBattles;
-    if(remote.chars){
-      Object.entries(remote.chars).forEach(([id,v])=>{
-        if(!PROGRESS.chars[id]) PROGRESS.chars[id]={xp:0,level:0,wins:0,battles:0};
-        const local=PROGRESS.chars[id];
-        if(v.xp>local.xp){local.xp=v.xp;local.level=v.level;}
-        if(v.wins>local.wins) local.wins=v.wins;
-        if(v.battles>local.battles) local.battles=v.battles;
-      });
-    }
-    if(remote.ownedSkins) Object.assign(PROGRESS.ownedSkins||{},remote.ownedSkins);
-    if(remote.equippedSkins) Object.assign(PROGRESS.equippedSkins||{},remote.equippedSkins);
-    saveProgress(PROGRESS);
-    updateWalletUI();
-    updateCharCards();
-  }
-}
-async function fwPushProgress(){
-  if(!FW_TOKEN) return;
-  await apiPost('/progress/save',PROGRESS,true);
-}
-
-// ── WebSocket ──
-function fwConnect(){
-  if(!FW_TOKEN||FW_WS?.readyState===1) return;
-  FW_WS=new WebSocket(FW_WS_URL);
-  FW_WS.onopen=()=>{FW_WS_OK=true;_wsSend({type:'auth',token:FW_TOKEN});const d=document.getElementById('ws-dot');if(d)d.textContent='🟢';};
-  FW_WS.onmessage=e=>{try{_wsHandle(JSON.parse(e.data));}catch{}};
-  FW_WS.onclose=()=>{FW_WS_OK=false;const d=document.getElementById('ws-dot');if(d)d.textContent='🔴';if(FW_TOKEN)setTimeout(fwConnect,4000);};
-  FW_WS.onerror=()=>{FW_WS_OK=false;};
-}
-function _wsSend(data){if(FW_WS?.readyState===1)FW_WS.send(JSON.stringify(data));}
-async function fwFindMatch(){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
-  _setOnlineStatus('🔄 Connecting...');
-  if(!FW_WS||FW_WS.readyState!==1){
-    fwConnect();
-    setTimeout(()=>{
-      if(FW_WS&&FW_WS.readyState===1){
-        _wsSend({type:'find_match'});
-        _setOnlineStatus('🔍 Searching for opponent...');
-      } else {
-        _setOnlineStatus('❌ Cannot connect. Try again.');
-      }
-    },2500);
-  } else {
-    _wsSend({type:'find_match'});
-    _setOnlineStatus('🔍 Searching for opponent...');
-  }
-}
-async function fwCreateRoom(){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
-  if(!FW_WS||FW_WS.readyState!==1){
-    fwConnect();
-    setTimeout(()=>{
-      if(FW_WS&&FW_WS.readyState===1){
-        _wsSend({type:'create_room'});
-        _setOnlineStatus('🏠 Room created — share the code!');
-      } else {
-        _setOnlineStatus('❌ Cannot connect. Try again.');
-      }
-    },2500);
-  } else {
-    _wsSend({type:'create_room'});
-  }
-}
-async function fwJoinRoom(code){_wsSend({type:'join_room',code});}
-function fwSendAction(action){_wsSend({type:'game_action',action});}
-function showJoinRoom(){
-  const inp=document.getElementById('room-code-input');
-  if(!inp)return;
-  if(inp.style.display==='none'){
-    inp.style.display='block';inp.focus();
-    inp.onkeydown=e=>{if(e.key==='Enter'&&inp.value.length===6){fwJoinRoom(inp.value);inp.style.display='none';}};
-  } else inp.style.display='none';
-}
-
-function _wsHandle(msg){
-  switch(msg.type){
-    case 'auth_ok':
-      _updateTitleUI();
-      fwSyncProgress();
-      break;
-    case 'queued':
-      _setOnlineStatus('Waiting for opponent...');
-      break;
-    case 'room_created':
-      const cd=document.getElementById('room-code-display');
-      if(cd){cd.textContent='Room: '+msg.code;cd.style.display='block';}
-      _setOnlineStatus('Share this code with your friend');
-      break;
-    case 'match_found':
-      const rcd2=document.getElementById('room-code-display');if(rcd2)rcd2.style.display='none';
-      window._fwMP={active:true,slot:msg.playerSlot,opponent:msg.opponentName,room:msg.roomCode};
-      _setOnlineStatus('⚔ Match found vs '+msg.opponentName+'! You are '+msg.playerSlot.toUpperCase()+'. Pick your fighter!');
-      setTimeout(()=>showSelect(),1800);
-      break;
-    case 'opponent_action':
-      _mpReceiveAction(msg.action);
-      break;
-    case 'opponent_disconnected':
-      _setOnlineStatus('Opponent disconnected');
-      window._fwMP={active:false};
-      break;
-    case 'error':
-      _setOnlineStatus('Error: '+msg.message);
-      break;
-  }
-}
-function _setOnlineStatus(msg){
-  const el=document.getElementById('online-status');
-  if(el) el.textContent=msg;
-}
-
-// ── Title UI ──
-function _updateTitleUI(){
-  const loggedIn=!!FW_USER;
-  const userInfo=document.getElementById('title-user-info');
-  const logoutBtn=document.getElementById('title-logout-btn');
-  const signinBtn=document.getElementById('title-signin-btn');
-  const onlinePanel=document.getElementById('online-panel');
-  if(userInfo){userInfo.textContent=loggedIn?'👤 '+FW_USER.username:'';userInfo.style.display=loggedIn?'block':'none';}
-  if(logoutBtn) logoutBtn.style.display=loggedIn?'block':'none';
-  if(signinBtn) signinBtn.style.display=loggedIn?'none':'block';
-  if(onlinePanel) onlinePanel.style.display=loggedIn?'flex':'none';
-  // Update WS dot
-  const dot=document.getElementById('ws-dot');
-  if(dot){
-    const ok=FW_WS&&FW_WS.readyState===1;
-    dot.textContent=ok?'🟢':'🔴';
-    dot.title=ok?'Connected':'Disconnected — tap Find Match to reconnect';
-  }
-}
-
-// ── Login screen UI ──
-let _loginTab='login';
-function switchLoginTab(tab){
-  _loginTab=tab;
-  document.getElementById('tab-login').classList.toggle('active',tab==='login');
-  document.getElementById('tab-register').classList.toggle('active',tab==='register');
-  document.getElementById('form-login').style.display=tab==='login'?'':'none';
-  document.getElementById('form-register').style.display=tab==='register'?'':'none';
-  document.getElementById('login-submit-btn').textContent=tab==='login'?'SIGN IN':'CREATE ACCOUNT';
-  document.getElementById('login-error').textContent='';
-}
-async function submitLogin(){
-  const btn=document.getElementById('login-submit-btn');
-  const errEl=document.getElementById('login-error');
-  btn.disabled=true;btn.textContent='...';errEl.textContent='';
-  let result;
-  if(_loginTab==='login'){
-    const login=document.getElementById('login-username').value.trim();
-    const pw=document.getElementById('login-password').value;
-    if(!login||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='SIGN IN';return;}
-    result=await fwLogin(login,pw);
-  } else {
-    const username=document.getElementById('reg-username').value.trim();
-    const email=document.getElementById('reg-email').value.trim();
-    const pw=document.getElementById('reg-password').value;
-    if(!username||!email||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='CREATE ACCOUNT';return;}
-    result=await fwRegister(username,email,pw);
-  }
-  if(result.error){
-    errEl.textContent=result.error;
-    btn.disabled=false;
-    btn.textContent=_loginTab==='login'?'SIGN IN':'CREATE ACCOUNT';
-  } else {
-    // Success — go to title
-    _updateTitleUI();
-    showTitle();
-  }
-}
-function skipLogin(){
-  showTitle();
-}
-
-// ── Auto-connect if already logged in ──
-(function(){
-  if(FW_TOKEN){fwConnect();}
-  _updateTitleUI();
-})();
-
-initProgress();
-// Show login screen if not logged in
-if(!FW_TOKEN){showScreen('login-screen');}else{showScreen('title-screen');}
-function showSelect(){p1Char=null;p2Char=null;selectedMap=null;buildGrids();updateSelectUI();updateCharCards();showScreen('select-screen');}
-
-// Credits auto-dismiss
-(function(){
-  const ov=document.getElementById('credits-overlay');
-  setTimeout(()=>{ov.classList.add("fade-out");setTimeout(()=>{ov.style.display="none";},700);},2000);
-})();
-
-// ═══════════════════════════════════════════════
-//  SELECT
-// ═══════════════════════════════════════════════
-function buildGrids(){
-  ['p1','p2'].forEach(p=>{
-    const g=document.getElementById(`${p}-grid`);g.innerHTML='';
-    CHARS.forEach(c=>{
-      const card=document.createElement('div');card.className='char-card';card.dataset.id=c.id;
-      card.innerHTML=`<div class="char-preview">${getCharSVG(c.id)}</div><div class="char-card-name">${c.name}</div><div class="char-card-stats">${c.desc}</div>`;
-      card.onclick=()=>selectChar(p,c.id);g.appendChild(card);
-    });
-  });
-}
-function selectChar(p,id){
-  if(p==='p1')p1Char=id;else p2Char=id;
-  ['p1','p2'].forEach(px=>{document.querySelectorAll(`#${px}-grid .char-card`).forEach(c=>c.classList.toggle('selected',c.dataset.id===(px==='p1'?p1Char:p2Char)));});
-  updateSelectUI();
-  _mpSyncCharSelect(p,id);
-}
-function updateSelectUI(){
-  const c1=CHARS.find(c=>c.id===p1Char),c2=CHARS.find(c=>c.id===p2Char);
-  const btn=document.getElementById('fight-btn'),sum=document.getElementById('select-summary'),prev=document.getElementById('match-preview');
-  if(c1&&c2){sum.textContent=`${c1.name} vs ${c2.name} — both 200 HP`;prev.textContent=`${c1.title}\n—\n${c2.title}`;btn.disabled=false;}
-  else if(c1){sum.textContent=`${c1.name} ready — P2 choose`;prev.textContent='';btn.disabled=true;}
-  else if(c2){sum.textContent=`P1 choose — ${c2.name} ready`;prev.textContent='';btn.disabled=true;}
-  else{sum.textContent='Select a fighter for each player';prev.textContent='';btn.disabled=true;}
-}
-
-// ═══════════════════════════════════════════════
-//  BATTLE SETUP
-// ═══════════════════════════════════════════════
-function startBattle(){
-  const c1=CHARS.find(c=>c.id===p1Char),c2=CHARS.find(c=>c.id===p2Char);if(!c1||!c2)return;
-  p1HP=c1.hp;p2HP=c2.hp;
-  p1Power=0;p2Power=0;p1SpecialUsed=false;p2SpecialUsed=false;
-  p1Block=null;p2Block=null;p1BlockHP=100;p2BlockHP=100;p1BlockBroken=false;p2BlockBroken=false;p1BlockCooldown=0;p2BlockCooldown=0;p1AtkCooldowns={};p2AtkCooldowns={};
-  p1HealCooldown=0;p2HealCooldown=0;p1SkipTurn=false;p2SkipTurn=false;p1DmgReduced=false;p2DmgReduced=false;p1Heals=0;p2Heals=0;
-  turn=1;round=1;busy=false;totalRounds=0;p1TotalDmg=0;p2TotalDmg=0;p1Blocks=0;p2Blocks=0;
-
-  initSkins();
-  document.getElementById('p1-svg').innerHTML=getCharSVG(p1Char);
-  document.getElementById('p2-svg').innerHTML=getCharSVG(p2Char);
-  document.getElementById('p1-arena-name').textContent=c1.name;
-  document.getElementById('p2-arena-name').textContent=c2.name;
-  document.getElementById('p1-hud-name').textContent=`⚔ ${c1.name}`;
-  document.getElementById('p2-hud-name').textContent=`${c2.name} ⚔`;
-
-  // Stars — coloured per map
-  const sc=document.getElementById('stars');sc.innerHTML='';
-  const mapDef=MAPS.find(m=>m.id===(selectedMap||'bloodmoon'))||MAPS[0];
-  for(let i=0;i<55;i++){const s=document.createElement('div');s.className='star '+mapDef.starColor;const sz=Math.random()*2.5+.5;s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*50}%;width:${sz}px;height:${sz}px;--op:${(Math.random()*.5+.2).toFixed(2)};--d:${(Math.random()*3+1.5).toFixed(1)}s;--dl:-${(Math.random()*3).toFixed(1)}s`;sc.appendChild(s);}
-
-  applyMap(selectedMap||'bloodmoon');
-  buildBtns('p1',c1);buildBtns('p2',c2);
-  applySkinGlow('p1');applySkinGlow('p2');
-  _mpSetupBattleUI();
-  updateHUD();updateTurnUI();setIdle('p1-wrap',1);setIdle('p2-wrap',2);
-  showScreen('battle-screen');
-  updateFighterLevelTooltips();
-  showMsg('⚔ BATTLE START ⚔',2000);
-}
-
-function setIdle(wid,p){const el=document.getElementById(wid);el.style.animation='';void el.offsetWidth;el.style.animation=p===1?'idle1 4s cubic-bezier(.45,.05,.55,.95) infinite':'idle2 4s cubic-bezier(.45,.05,.55,.95) infinite';}
-
-function buildBtns(player,char){
-  const cont=document.getElementById(`${player}-btns`);cont.innerHTML='';
-  char.attacks.forEach((atk,i)=>{
-    const b=document.createElement('button');b.className='atk-btn';b.id=`${player}-atk-${i}`;
-    const cdTier=atk.cd||0;
-    const cdLabel=cdTier>0?`<span style="opacity:.5;font-size:.3rem">CD:${cdTier}</span>`:'';
-    b.innerHTML=`${atk.e} ${atk.name} ${cdLabel}`;
-    b.title=`DMG: ${atk.dmg[0]}–${atk.dmg[1]} | Cooldown: ${cdTier===0?'None':cdTier+' turn(s)'}`;
-    b.onclick=()=>doAttack(player,i,false);cont.appendChild(b);
-  });
-  // Block button
-  const bl=document.createElement('button');bl.className='block-btn';bl.id=`${player}-block`;
-  bl.innerHTML=`🛡 Block`;bl.title='Block the next incoming attack! (1-3 turn cooldown)';
-  bl.onclick=()=>doBlock(player);cont.appendChild(bl);
-  // Heal button
-  const hl=document.createElement('button');hl.className='heal-btn';hl.id=`${player}-heal`;
-  hl.innerHTML=`💚 Heal`;hl.title='Heal 75 HP. Skips next turn. Grants 40% damage reduction for your opponent\'s next turn. Cooldown: 2-4 rounds.';
-  hl.onclick=()=>doHeal(player);cont.appendChild(hl);
-  // Special
-  const sb=document.createElement('button');sb.className='atk-btn special-btn';sb.id=`${player}-special`;
-  sb.innerHTML=`${char.special.e} ${char.special.name}`;sb.title=`SPECIAL! Fill power bar to 100% to unleash. DMG: ${char.special.dmg[0]}–${char.special.dmg[1]}. Reusable!`;
-  sb.disabled=true;sb.onclick=()=>doAttack(player,-1,true);cont.appendChild(sb);
-}
-
-// ═══════════════════════════════════════════════
-//  BLOCK ACTION
-// ═══════════════════════════════════════════════
-function doBlock(player){
-  triggerBlockVignette(player);
-  if(busy)return;
-  if(window._fwMP?.active){
-    if(player!==window._fwMP.slot){return;}
-    fwSendAction({type:'block'});
-  }
-  const pn=player==='p1'?1:2;
-  if(turn!==pn){showMsg("Not your turn!",900);return;}
-  const cd=player==='p1'?p1BlockCooldown:p2BlockCooldown;
-  if(cd>0){showMsg(`Block on cooldown for ${cd} more turn${cd>1?'s':''}!`,1000);return;}
-  const isBlocking=player==='p1'?(p1Block==='blocking'):(p2Block==='blocking');
-  if(isBlocking){showMsg("Shield already raised! ("+( player==='p1'?p1BlockHP:p2BlockHP)+" HP left)",900);return;}
-
-  busy=true;disableAllBtns(true);
-  totalRounds++;
-
-  // Raise fresh shield with 100 HP
-  if(player==='p1'){p1Block='blocking';p1BlockHP=100;p1BlockBroken=false;}
-  else{p2Block='blocking';p2BlockHP=100;p2BlockBroken=false;}
-
-  // Activate shield aura
-  document.getElementById(`${player}-shield`).classList.add('active');
-
-  const wrapId=player==='p1'?'p1-wrap':'p2-wrap';
-  const el=document.getElementById(wrapId);
-  el.style.animation=player==='p1'?'blockStance1 .6s ease':'blockStance2 .6s ease';
-
-  const hp=player==='p1'?p1BlockHP:p2BlockHP;
-  showMsg(`🛡 Shield raised! (${hp} HP — absorbs up to 100 dmg)`,1600,'block');
-
-  setTimeout(()=>{
-    setIdle(wrapId,pn);
-    turn=turn===1?2:1;
-    if(turn===1)round++;
-    document.getElementById('round-badge').textContent=`ROUND ${round}`;
-    busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();
-  },700);
-}
-
-
-// ═══════════════════════════════════════════════
-//  HEAL ACTION
-// ═══════════════════════════════════════════════
-function doHeal(player){
-  if(busy)return;
-  if(window._fwMP?.active){
-    if(player!==window._fwMP.slot){return;}
-    fwSendAction({type:'heal'});
-  }
-  const pn=player==='p1'?1:2;
-  if(turn!==pn){showMsg("Not your turn!",900);return;}
-  const cd=player==='p1'?p1HealCooldown:p2HealCooldown;
-  if(cd>0){showMsg(`Heal on cooldown for ${cd} more round${cd>1?'s':''}!`,1100);return;}
-  const maxHP=CHARS.find(c=>c.id===(player==='p1'?p1Char:p2Char)).hp;
-  const curHP=player==='p1'?p1HP:p2HP;
-  if(curHP>=maxHP){showMsg("Already at full health!",900);return;}
-
-  busy=true;disableAllBtns(true);
-  totalRounds++;
-
-  const healAmt=Math.min(100,maxHP-curHP);
-  triggerHealVignette(player);
-  if(player==='p1'){
-    p1HP=Math.min(maxHP,p1HP+healAmt);
-    p1HealCooldown=Math.floor(Math.random()*3)+2; // 2-4
-    p1SkipTurn=true;
-    p1DmgReduced=true;
-    p1Heals++;
-  } else {
-    p2HP=Math.min(maxHP,p2HP+healAmt);
-    p2HealCooldown=Math.floor(Math.random()*3)+2;
-    p2SkipTurn=true;
-    p2DmgReduced=true;
-    p2Heals++;
-  }
-
-  const wrapId=player==='p1'?'p1-wrap':'p2-wrap';
-  const el=document.getElementById(wrapId);
-
-  // Activate heal aura
-  document.getElementById(`${player}-heal-aura`).classList.add('active');
-  document.getElementById(`${player}-dmg-aura`).classList.add('active');
-
-  // Heal root animation (gentle dip + rise)
-  el.style.animation='none';void el.offsetWidth;
-  el.style.animation=pn===1?'root1 .9s ease':'root2 .9s ease';
-
-  // Spawn heal particles
-  setTimeout(()=>{
-    const r=el.getBoundingClientRect();
-    spawnHealParticles(r.left+r.width*.5, r.top+r.height*.5);
-    spawnHealParticles(r.left+r.width*.5, r.top+r.height*.3);
-  },200);
-
-  const cd2=player==='p1'?p1HealCooldown:p2HealCooldown;
-  showMsg(`💚 +${healAmt} HP healed! Turn skipped — 40% dmg shield for opponent's next turn (CD: ${cd2} rounds)`,2400,'heal');
-  updateHUD();updateHealUI();
-
-  setTimeout(()=>{
-    el.style.animation='';
-    setIdle(wrapId,pn);
-    // Give the CURRENT player's turn away — healer skips their NEXT turn too
-    // We do: switch turn normally now, then mark skipTurn so when it comes back it's auto-skipped
-    turn=turn===1?2:1;
-    if(turn===1)round++;
-    document.getElementById('round-badge').textContent=`ROUND ${round}`;
-    busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
-    // If the new current player has skipTurn set (shouldn't normally happen here), handle it
-  },950);
-}
-
-function spawnHealParticles(x,y){
-  const symbols=['💚','✨','🌿','⬆','💫'];
-  for(let i=0;i<8;i++){
-    setTimeout(()=>{
-      const el=document.createElement('div');el.className='heal-particle';
-      const sym=symbols[Math.floor(Math.random()*symbols.length)];
-      el.textContent=sym;
-      el.style.cssText=`left:${x+Math.random()*60-30}px;top:${y+Math.random()*40-20}px;--hd:${(.6+Math.random()*.7).toFixed(2)}s;--hr:${(Math.random()*40-20).toFixed(0)}deg;`;
-      document.getElementById('battle-screen').appendChild(el);
-      setTimeout(()=>el.remove(),1200);
-    },i*70);
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  ATTACK ACTION
-// ═══════════════════════════════════════════════
-function doAttack(player,atkIdx,isSpecial){
-  if(busy)return;
-  // Multiplayer: only allow your slot to act, then broadcast
-  if(window._fwMP?.active){
-    if(player!==window._fwMP.slot){return;} // not your fighter
-    // Send action to opponent
-    fwSendAction({type:'attack',atkIdx,isSpecial});
-  }
-  const pn=player==='p1'?1:2;
-  if(turn!==pn){showMsg("Not your turn!",900);return;}
-
-  const attC=CHARS.find(c=>c.id===(player==='p1'?p1Char:p2Char));
-  const defC=CHARS.find(c=>c.id===(player==='p1'?p2Char:p1Char));
-
-  if(isSpecial){
-    const pw=player==='p1'?p1Power:p2Power;
-    if(pw<100){showMsg(`Need full power! (${pw}%)`,900);return;}
-  }
-
-  // Check attack-specific cooldown
-  if(!isSpecial){
-    const cds=player==='p1'?p1AtkCooldowns:p2AtkCooldowns;
-    if(cds[atkIdx]>0){showMsg(`That attack is cooling down (${cds[atkIdx]} turn${cds[atkIdx]>1?'s':''} left)!`,1000);return;}
-  }
-
-  busy=true;disableAllBtns(true);
-  totalRounds++;
-
-  const atk=isSpecial?attC.special:attC.attacks[atkIdx];
-  let dmg=Math.floor(Math.random()*(atk.dmg[1]-atk.dmg[0]+1))+atk.dmg[0];
-
-  // 30% damage penalty if attacker's OWN shield is broken (exposed bark)
-  const attBroken=player==='p1'?p1BlockBroken:p2BlockBroken;
-  if(attBroken&&!isSpecial){dmg=Math.round(dmg*0.7);}
-
-  // Set this attack's cooldown
-  if(!isSpecial){
-    const cds=player==='p1'?p1AtkCooldowns:p2AtkCooldowns;
-    const cd=attC.attacks[atkIdx].cd||0;
-    if(cd>0) cds[atkIdx]=cd;
-  }
-
-  // Check defender blocking
-  const defBlocking=player==='p1'?(p2Block==='blocking'):(p1Block==='blocking');
-  // Apply 60% damage reduction if defender healed last turn
-  const defReduced=player==='p1'?p2DmgReduced:p1DmgReduced;
-  if(defReduced&&!defBlocking){dmg=Math.round(dmg*.6);} // 40% damage reduction
-
-  if(!isSpecial){
-    if(player==='p1'&&!p1SpecialUsed)p1Power=Math.min(100,p1Power+attC.powerPerHit);
-    if(player==='p2'&&!p2SpecialUsed)p2Power=Math.min(100,p2Power+attC.powerPerHit);
-  }else{
-    if(player==='p1'){p1Power=0;}
-    else{p2Power=0;}
-  }
-
-  const attWrap=player==='p1'?'p1-wrap':'p2-wrap';
-  const defWrap=player==='p1'?'p2-wrap':'p1-wrap';
-  const style=atk.style||'lunge';
-
-  if(isSpecial){
-    runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking);
-  } else {
-    runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking,atkIdx);
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  NORMAL ATTACK
-// ═══════════════════════════════════════════════
-function runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking,atkIdx){
-  const isP1=player==='p1';
-  const attEl=document.getElementById(attWrap);
-  const defEl=document.getElementById(defWrap);
-  const dur=ATK_DUR[style]||700;
-
-  showMsg(atk.msg,1600);
-  // Attacker animation
-  attEl.style.animation='none';void attEl.offsetWidth;
-  attEl.style.animation=isP1?ATK_ANIM[style].p1:ATK_ANIM[style].p2;
-  attEl.style.zIndex='5';
-
-  // Projectile if applicable
-  if(atk.projectile) spawnProjectile(atk.projectile,attWrap,defWrap,dur*.55);
-
-  const hitTime=Math.round(dur*.48);
-
-  setTimeout(()=>{
-    if(defBlocking){
-      // BLOCKED!
-      handleBlock(player,defWrap,defEl,defC,dmg);
-    } else {
-      // Normal hit
-      doSkinFX(player,defWrap,atkIdx);
-      if(isP1)p2HP=Math.max(0,p2HP-dmg);else p1HP=Math.max(0,p1HP-dmg);
-      if(isP1)p1TotalDmg+=dmg;else p2TotalDmg+=dmg;
-      updateHUD();updateSpecialBtns();updateHealUI();
-
-      const dr=defEl.getBoundingClientRect();
-      spawnImpactAt(dr.left+dr.width*.45,dr.top+dr.height*.35);
-      spawnLeavesAt(dr.left+dr.width*.5,dr.top+dr.height*.4,defC.leafColor,6);
-      spawnShockwaveAt(dr.left+dr.width*.5,dr.top+dr.height*.45);
-      shakeScreen(false);
-      triggerHitVignette(isP1?'p2':'p1');
-
-      defEl.style.animation='none';void defEl.offsetWidth;
-      defEl.style.animation=isP1?'hurt2 .45s ease':'hurt1 .45s ease';
-      setTimeout(()=>{defEl.style.animation='';setIdle(defWrap,isP1?2:1);},480);
-    }
-
-    setTimeout(()=>{
-      attEl.style.zIndex='';attEl.style.animation='';setIdle(attWrap,isP1?1:2);
-      if(p1HP<=0||p2HP<=0){killSequence();return;}
-      advanceTurn();
-    },dur-hitTime+120);
-  },hitTime);
-}
-
-// ═══════════════════════════════════════════════
-//  SPECIAL ATTACK
-// ═══════════════════════════════════════════════
-function runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking){
-  const isP1=player==='p1';
-  const attEl=document.getElementById(attWrap);
-  const defEl=document.getElementById(defWrap);
-  const flash=document.getElementById('flash');
-  flash.style.background='#fff';
-  flash.classList.add('do-flash');
-  setTimeout(()=>flash.classList.remove('do-flash'),600);
-
-  showMsg(atk.msg,2200,true);
-
-  attEl.style.animation='none';void attEl.offsetWidth;
-  attEl.style.animation=isP1?ATK_ANIM.spec.p1:ATK_ANIM.spec.p2;
-  attEl.style.zIndex='5';
-
-  // Build-up particles
-  for(let i=0;i<4;i++) setTimeout(()=>{const ar=attEl.getBoundingClientRect();spawnImpactAt(ar.left+ar.width*.5+Math.random()*40-20,ar.top+ar.height*.4+Math.random()*30-15);},i*100);
-
-  setTimeout(()=>{
-    if(defBlocking){
-      // Even specials can be partially blocked
-      dmg=Math.round(dmg*.4);
-      handleBlock(player,defWrap,defEl,defC,dmg,true);
-    } else {
-      if(isP1){p2HP=Math.max(0,p2HP-dmg);p1TotalDmg+=dmg;}else{p1HP=Math.max(0,p1HP-dmg);p2TotalDmg+=dmg;}
-      updateHUD();updateSpecialBtns();updateHealUI();
-      const dr=defEl.getBoundingClientRect();
-      doSkinFX(player,defWrap,-1);
-      for(let i=0;i<3;i++) setTimeout(()=>{spawnImpactAt(dr.left+dr.width*(.25+Math.random()*.5),dr.top+dr.height*(.2+Math.random()*.4));spawnShockwaveAt(dr.left+dr.width*.5,dr.top+dr.height*.5);},i*130);
-      spawnLeavesAt(dr.left+dr.width*.5,dr.top+dr.height*.4,defC.leafColor,14);
-      shakeScreen(true);
-      triggerHitVignette(isP1?'p2':'p1');
-      defEl.style.animation='none';void defEl.offsetWidth;
-      defEl.style.animation=isP1?'hurt2 .6s ease':'hurt1 .6s ease';
-      setTimeout(()=>{defEl.style.animation='';setIdle(defWrap,isP1?2:1);},640);
-    }
-
-    setTimeout(()=>{
-      attEl.style.zIndex='';attEl.style.animation='';setIdle(attWrap,isP1?1:2);
-      if(p1HP<=0||p2HP<=0){killSequence();return;}
-      advanceTurn();
-    },600);
-  },520);
-}
-
-// ═══════════════════════════════════════════════
-//  BLOCK RESOLUTION
-// ═══════════════════════════════════════════════
-function handleBlock(attacker,defWrap,defEl,defC,dmg,isSpecial=false){
-  const defender=attacker==='p1'?'p2':'p1';
-  const isDefP1=defender==='p1';
-
-  // Drain shield HP — shield absorbs full dmg until broken
-  const shieldHP=isDefP1?p1BlockHP:p2BlockHP;
-  const absorbed=Math.min(dmg,shieldHP);
-  const overflow=dmg-absorbed; // damage that spills through if shield breaks
-
-  const newShieldHP=shieldHP-absorbed;
-  const shieldBroken=newShieldHP<=0;
-
-  if(isDefP1){
-    p1BlockHP=newShieldHP;
-    if(shieldBroken){
-      p1Block=null;p1BlockBroken=true;
-      const cd=Math.floor(Math.random()*3)+1;
-      p1BlockCooldown=cd;
-      p1Blocks++;
-      if(overflow>0) p1HP=Math.max(0,p1HP-overflow);
-      document.getElementById('p1-shield').classList.remove('active');
-    }
-  } else {
-    p2BlockHP=newShieldHP;
-    if(shieldBroken){
-      p2Block=null;p2BlockBroken=true;
-      const cd=Math.floor(Math.random()*3)+1;
-      p2BlockCooldown=cd;
-      p2Blocks++;
-      if(overflow>0) p2HP=Math.max(0,p2HP-overflow);
-      document.getElementById('p2-shield').classList.remove('active');
-    }
-  }
-
-  // FX
-  const dr=defEl.getBoundingClientRect();
-  const flash=document.getElementById('flash');
-  flash.style.background='rgba(0,200,255,1)';
-  flash.classList.add('block-flash');
-  setTimeout(()=>flash.classList.remove('block-flash'),450);
-
-  const cx=dr.left+dr.width*.5, cy=dr.top+dr.height*.45;
-  spawnBlockShockwave(cx,cy);
-  for(let i=0;i<8;i++){
-    setTimeout(()=>{
-      const p=document.createElement('div');p.className='particle-fx';
-      const ang=Math.random()*360,dist=50+Math.random()*60;
-      const px=Math.cos(ang*Math.PI/180)*dist,py=Math.sin(ang*Math.PI/180)*dist;
-      p.style.cssText=`left:${cx}px;top:${cy}px;width:${4+Math.random()*5}px;height:${4+Math.random()*5}px;background:rgba(0,200,255,${.5+Math.random()*.5});--px:${px.toFixed(0)}px;--py:${py.toFixed(0)}px;--pd:${(.4+Math.random()*.4).toFixed(2)}s`;
-      document.getElementById('battle-screen').appendChild(p);
-      setTimeout(()=>p.remove(),800);
-    },i*35);
-  }
-
-  if(shieldBroken){
-    const msg=overflow>0
-      ? `💥 SHIELD SHATTERED! ${overflow} dmg breaks through! Attacker -30% dmg!`
-      : `💥 SHIELD SHATTERED! Attacker deals -30% dmg until next shield!`;
-    showMsg(msg,2200,'block');
-    shakeScreen(true);
-    if(overflow>0) triggerHitVignette(isDefP1?'p1':'p2');
-    defEl.style.animation='none';void defEl.offsetWidth;
-    defEl.style.animation=isDefP1?'hurt1 .5s ease':'hurt2 .5s ease';
-    setTimeout(()=>{defEl.style.animation='';setIdle(defWrap,isDefP1?1:2);},530);
-  } else {
-    const rem=isDefP1?p1BlockHP:p2BlockHP;
-    showMsg(`🛡 Shield absorbed ${absorbed} dmg! (${rem} HP left)`,1800,'block');
-    defEl.style.animation='none';void defEl.offsetWidth;
-    defEl.style.animation=isDefP1?'blockStance1 .3s ease':'blockStance2 .3s ease';
-    setTimeout(()=>{defEl.style.animation='';setIdle(defWrap,isDefP1?1:2);},330);
-  }
-
-  updateHUD();updateSpecialBtns();updateBlockUI();
-  // Check death after overflow
-  if(p1HP<=0||p2HP<=0){ setTimeout(()=>killSequence(),600); }
-}
-
-// ═══════════════════════════════════════════════
-//  ADVANCE TURN
-// ═══════════════════════════════════════════════
-function advanceTurn(){
-  // Tick block cooldowns for the player who just acted
-  if(turn===1){ if(p1BlockCooldown>0)p1BlockCooldown--; }
-  else { if(p2BlockCooldown>0)p2BlockCooldown--; }
-
-  // Expire dmg reduction after the attacker finishes their full turn
-  if(turn===1){
-    if(p2DmgReduced){p2DmgReduced=false;const a=document.getElementById('p2-dmg-aura');if(a)a.classList.remove('active');}
-  } else {
-    if(p1DmgReduced){p1DmgReduced=false;const a=document.getElementById('p1-dmg-aura');if(a)a.classList.remove('active');}
-  }
-
-  // Tick attack cooldowns for whoever just acted
-  const actingCDs=turn===1?p1AtkCooldowns:p2AtkCooldowns;
-  Object.keys(actingCDs).forEach(k=>{if(actingCDs[k]>0){actingCDs[k]--;if(actingCDs[k]<=0)delete actingCDs[k];}});
-
-  turn=turn===1?2:1;
-  if(turn===1)round++;
-  document.getElementById('round-badge').textContent=`ROUND \${round}`;
-
-  // Tick heal cooldowns for whoever just became the active player
-  if(turn===1){ if(p1HealCooldown>0)p1HealCooldown--; }
-  else { if(p2HealCooldown>0)p2HealCooldown--; }
-
-  // Check if new active player must skip their turn
-  const skipP = turn===1?p1SkipTurn:p2SkipTurn;
-  if(skipP){
-    if(turn===1){p1SkipTurn=false;}else{p2SkipTurn=false;}
-    busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
-    // Show skip message then auto-pass
-    const skipName=turn===1?'Player 1':'Player 2';
-    showMsg(`⏭ ${skipName}'s turn skipped (healing)`,1600);
-    setTimeout(()=>{
-      if(!busy){
-        busy=true;disableAllBtns(true);
-        setTimeout(()=>advanceTurn(),800);
-      }
-    },1700);
-    return;
-  }
-
-  busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
-}
-
-// ═══════════════════════════════════════════════
-//  KILL SEQUENCE
-// ═══════════════════════════════════════════════
-function killSequence(){
-  busy=true;disableAllBtns(true);
-  document.getElementById('p1-ctrl').classList.remove('your-turn');
-  document.getElementById('p2-ctrl').classList.remove('your-turn');
-  const p1Won=p2HP<=0;
-  const winWrap=p1Won?'p1-wrap':'p2-wrap';
-  const loseWrap=p1Won?'p2-wrap':'p1-wrap';
-  const winEl=document.getElementById(winWrap);
-  const loseEl=document.getElementById(loseWrap);
-
-  showMsg(p1Won?'🏆 PLAYER 1 WINS!':'🏆 PLAYER 2 WINS!',9999);
-
-  // Remove any shields
-  document.getElementById('p1-shield').classList.remove('active');
-  document.getElementById('p2-shield').classList.remove('active');
-  document.getElementById('p1-heal-aura').classList.remove('active');
-  document.getElementById('p2-heal-aura').classList.remove('active');
-  document.getElementById('p1-dmg-aura').classList.remove('active');
-  document.getElementById('p2-dmg-aura').classList.remove('active');
-
-  // Death animation
-  loseEl.style.animation='none';void loseEl.offsetWidth;
-  loseEl.style.animation=loseWrap==='p2-wrap'?'deathFall2 1s cubic-bezier(.36,.07,.19,.97) forwards':'deathFall1 1s cubic-bezier(.36,.07,.19,.97) forwards';
-
-  for(let i=0;i<3;i++) setTimeout(()=>shakeScreen(i===1),i*200);
-
-  setTimeout(()=>{
-    const dr=loseEl.getBoundingClientRect();
-    spawnLeavesAt(dr.left+dr.width*.5,dr.top+dr.height*.4,CHARS.find(c=>c.id===(p1Won?p2Char:p1Char)).leafColor,22);
-    for(let i=0;i<4;i++) setTimeout(()=>spawnImpactAt(dr.left+Math.random()*dr.width,dr.top+Math.random()*dr.height),i*120);
-  },250);
-
-  setTimeout(()=>{
-    winEl.style.animation='none';void winEl.offsetWidth;
-    winEl.style.animation=winWrap==='p1-wrap'?'victory1 1s ease-in-out infinite':'victory2 1s ease-in-out infinite';
-  },700);
-
-  setTimeout(()=>showWinScreen(p1Won),2100);
-}
-
-// ═══════════════════════════════════════════════
-//  WIN SCREEN
-// ═══════════════════════════════════════════════
-function showWinScreen(p1Won){
-  const wC=CHARS.find(c=>c.id===(p1Won?p1Char:p2Char));
-  const lC=CHARS.find(c=>c.id===(p1Won?p2Char:p1Char));
-  const wp=p1Won?'Player 1':'Player 2';
-  document.getElementById('win-player-lbl').textContent=`${wp} Wins!`;
-  document.getElementById('win-char-name').textContent=wC.name;
-  document.getElementById('win-subtitle').textContent=wC.title;
-  document.getElementById('win-tree-preview').innerHTML=getCharSVG(p1Won?p1Char:p2Char);
-  const stories=[
-    `${lC.name} crashes to earth with a sound like thunder. ${wC.name} stands tall, bathed in moonlight, victorious.`,
-    `As ${lC.name} falls, the forest grows silent. ${wC.name} raises its boughs in triumph — the ancient war is decided.`,
-    `${lC.name} splinters and topples, roots tearing free. ${wC.name} reigns supreme over the forest eternal.`,
-    `The ground trembles as ${lC.name} topples. Centuries of rivalry end here. ${wC.name} claims the forest throne.`,
-  ];
-  document.getElementById('win-story').textContent=stories[Math.floor(Math.random()*stories.length)];
-  document.getElementById('win-stats').textContent=`${round} rounds · P1: ${p1TotalDmg} dmg, ${p1Blocks} block${p1Blocks!==1?'s':''}, ${p1Heals} heal${p1Heals!==1?'s':''} · P2: ${p2TotalDmg} dmg, ${p2Blocks} block${p2Blocks!==1?'s':''}, ${p2Heals} heal${p2Heals!==1?'s':''}`;
-
-  // ── Grant XP and Tree Bucks ──
-  const p1Res=grantBattleXP(p1Char,p1Won);
-  const p2Res=grantBattleXP(p2Char,!p1Won);
-  const winRes=p1Won?p1Res:p2Res;const loseRes=p1Won?p2Res:p1Res;
-  const wC2=CHARS.find(c=>c.id===(p1Won?p1Char:p2Char));
-  const lC2=CHARS.find(c=>c.id===(p1Won?p2Char:p1Char));
-  let rewardLines=[];
-  rewardLines.push('🌿 +'+winRes.bucksGain+' Tree Bucks · '+wC2.name+' +'+winRes.xpGain+' XP → Lv '+winRes.newLevel);
-  rewardLines.push(lC2.name+' +'+loseRes.xpGain+' XP → Lv '+loseRes.newLevel);
-  [...winRes.newAchs,...loseRes.newAchs].forEach(achId=>{
-    const parts=achId.split('_');const cid=parts[0];const m=parseInt(parts[1]);
-    const chx=CHARS.find(c=>c.id===cid);const def=ACH_DEFS.find(a=>a.milestone===m);
-    if(chx&&def)rewardLines.push('🏆 ACHIEVEMENT: '+chx.name+' '+def.suffix+'! +'+def.bucksBonus+'🌿');
-  });
-  const rewardEl=document.getElementById('win-reward');
-  if(rewardEl){rewardEl.style.display='block';rewardEl.innerHTML=rewardLines.map(l=>'<div>'+l+'</div>').join('');}
-  showScreen('win-screen');
-  spawnConfetti();
-}
-function spawnConfetti(){
-  const colors=['#e8c84a','#ff6a00','#cc3050','#3aaa48','#4488ff','#00c8ff'];
-  for(let i=0;i<65;i++){
-    setTimeout(()=>{
-      const p=document.createElement('div');p.className='confetti-piece';
-      const col=colors[Math.floor(Math.random()*colors.length)],dur=Math.random()*2+1.5;
-      p.style.cssText=`left:${Math.random()*100}%;top:-20px;background:${col};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${dur.toFixed(2)}s;animation-delay:${(Math.random()*.5).toFixed(2)}s;`;
-      document.getElementById('win-screen').appendChild(p);setTimeout(()=>p.remove(),(dur+.7)*1000);
-    },i*30);
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  HUD
-// ═══════════════════════════════════════════════
-function updateHUD(){
-  const c1=CHARS.find(c=>c.id===p1Char),c2=CHARS.find(c=>c.id===p2Char);
-  const pp1=p1HP/c1.hp*100,pp2=p2HP/c2.hp*100;
-  document.getElementById('p1-hp-fill').style.width=pp1+'%';
-  document.getElementById('p2-hp-fill').style.width=pp2+'%';
-  document.getElementById('p1-hp-fill').style.background=hpGrad(pp1);
-  document.getElementById('p2-hp-fill').style.background=hpGrad(pp2);
-  document.getElementById('p1-hp-text').textContent=`${Math.max(0,p1HP)} / ${c1.hp} HP`;
-  document.getElementById('p2-hp-text').textContent=`${Math.max(0,p2HP)} / ${c2.hp} HP`;
-  document.getElementById('p1-pw-fill').style.width=p1Power+'%';
-  document.getElementById('p2-pw-fill').style.width=p2Power+'%';
-  document.getElementById('p1-pw-text').textContent=p1Power>=100?'⚡ SPECIAL READY!':'Power: '+p1Power+'%';
-  document.getElementById('p2-pw-text').textContent=p2Power>=100?'⚡ SPECIAL READY!':'Power: '+p2Power+'%';
-}
-function hpGrad(p){
-  if(p>60)return'linear-gradient(90deg,#2d8a20,#5ccc40)';
-  if(p>30)return'linear-gradient(90deg,#8a6a10,#ccaa30)';
-  return'linear-gradient(90deg,#8a1a10,#cc3020)';
-}
-function updateBlockUI(){
-  const update=(player,blocking,cd,shieldHP,broken)=>{
-    const el=document.getElementById(`${player}-block-status`);
-    const btn=document.getElementById(`${player}-block`);
-    if(blocking==='blocking'){
-      el.textContent=`🛡 SHIELD UP — ${shieldHP}/100 HP`; el.className='block-status blocking';
-      if(btn){btn.classList.add('on-cooldown');btn.disabled=true;}
-    } else if(broken){
-      el.textContent=`💔 Shield broken! -30% dmg${cd>0?' (CD:'+cd+')':''}`;el.className='block-status cooldown';
-      if(btn){
-        if(cd>0){btn.classList.add('on-cooldown');btn.disabled=true;}
-        else{btn.classList.remove('on-cooldown');}
-      }
-    } else if(cd>0){
-      el.textContent=`🛡 cooldown: ${cd} turn${cd>1?'s':''}`;el.className='block-status cooldown';
-      if(btn){btn.classList.add('on-cooldown');btn.disabled=true;}
-    } else {
-      el.textContent='';el.className='block-status';
-      if(btn){btn.classList.remove('on-cooldown');}
-    }
-  };
-  update('p1',p1Block,p1BlockCooldown,p1BlockHP,p1BlockBroken);
-  update('p2',p2Block,p2BlockCooldown,p2BlockHP,p2BlockBroken);
-}
-function updateSpecialBtns(){
-  ['p1','p2'].forEach(p=>{
-    const sb=document.getElementById(`${p}-special`);if(!sb)return;
-    const pw=p==='p1'?p1Power:p2Power;
-    if(pw>=100){sb.disabled=false;sb.classList.add('special-ready');sb.style.opacity='1';}
-    else{sb.disabled=true;sb.classList.remove('special-ready');}
-  });
-}
-
-function updateHealUI(){
-  const update=(player,cd,skip,dmgR)=>{
-    const hs=document.getElementById(`${player}-heal-status`);
-    const hb=document.getElementById(`${player}-heal`);
-    if(skip){
-      hs.textContent='⏭ Turn skipped…';hs.className='heal-status healing';
-    } else if(dmgR){
-      hs.textContent='🛡 40% dmg shield (1 opp. turn)';hs.className='heal-status protected';
-    } else if(cd>0){
-      hs.textContent=`💚 heal CD: ${cd} round${cd>1?'s':''}`;hs.className='heal-status cooldown';
-    } else {
-      hs.textContent='';hs.className='heal-status';
-    }
-    if(hb){
-      const myTurn=(player==='p1'&&turn===1)||(player==='p2'&&turn===2);
-      const maxHP=CHARS.find(c=>c.id===(player==='p1'?p1Char:p2Char)).hp;
-      const curHP=player==='p1'?p1HP:p2HP;
-      const atFull=curHP>=maxHP;
-      hb.disabled=!myTurn||cd>0||atFull;
-      if(cd>0||atFull)hb.classList.add('on-cooldown');else hb.classList.remove('on-cooldown');
-    }
-  };
-  update('p1',p1HealCooldown,p1SkipTurn,p1DmgReduced);
-  update('p2',p2HealCooldown,p2SkipTurn,p2DmgReduced);
-}
-function updateTurnUI(){
-  const p1t=document.getElementById('p1-turn'),p2t=document.getElementById('p2-turn');
-  const p1c=document.getElementById('p1-ctrl'),p2c=document.getElementById('p2-ctrl');
-  if(turn===1){
-    p1t.textContent='⚔ Your Turn!';p1t.className='turn-ind active';
-    p2t.textContent='Waiting…';p2t.className='turn-ind';
-    p1c.classList.add('your-turn');p2c.classList.remove('your-turn');
-  } else {
-    p2t.textContent='⚔ Your Turn!';p2t.className='turn-ind active';
-    p1t.textContent='Waiting…';p1t.className='turn-ind';
-    p2c.classList.add('your-turn');p1c.classList.remove('your-turn');
-  }
-  updateSpecialBtns();
-  updateBlockUI();
-  // Disable attack buttons on cooldown + update labels
-  ['p1','p2'].forEach(p=>{
-    const cds=p==='p1'?p1AtkCooldowns:p2AtkCooldowns;
-    const char=CHARS.find(ch=>ch.id===(p==='p1'?p1Char:p2Char));
-    if(char) char.attacks.forEach((atk,i)=>{
-      const btn=document.getElementById(`${p}-atk-${i}`);
-      if(!btn)return;
-      const cd=cds[i]||0;
-      if(cd>0){
-        btn.disabled=true;
-        btn.classList.add('cooling');
-        btn.innerHTML=`<span style="filter:grayscale(1) opacity:.5">${atk.e}</span> ${atk.name} <span style="opacity:.6;font-size:.32rem">⏳${cd}</span>`;
-      } else {
-        btn.classList.remove('cooling');
-        const cdTier=atk.cd||0;
-        const cdLabel=cdTier===0?'':`<span style="opacity:.5;font-size:.3rem">CD:${cdTier}</span>`;
-        btn.innerHTML=`${atk.e} ${atk.name} ${cdLabel}`;
-      }
-    });
-  });
-  // Enable/disable block button based on cooldown and turn
-  ['p1','p2'].forEach(p=>{
-    const bb=document.getElementById(`${p}-block`);if(!bb)return;
-    const myTurn=(p==='p1'&&turn===1)||(p==='p2'&&turn===2);
-    const cd=p==='p1'?p1BlockCooldown:p2BlockCooldown;
-    const isBlocking=p==='p1'?(p1Block==='blocking'):(p2Block==='blocking');
-    bb.disabled=!myTurn||cd>0||isBlocking;
-    if(cd>0||isBlocking)bb.classList.add('on-cooldown');else bb.classList.remove('on-cooldown');
-  });
-}
-function disableAllBtns(s){document.querySelectorAll('.atk-btn,.block-btn,.heal-btn').forEach(b=>b.disabled=s);}
-
-// ═══════════════════════════════════════════════
-//  VFX
-// ═══════════════════════════════════════════════
-function showMsg(msg,dur=1500,type=''){
-  const el=document.getElementById('battle-msg');
-  el.textContent=msg;
-  el.className='show'+(type==='special'?' special-msg':type==='block'?' block-msg':type==='heal'?' heal-msg':'');
-  clearTimeout(el._t);
-  el._t=setTimeout(()=>{el.className='';},dur);
-}
-function spawnImpactAt(x,y){
-  const el=document.createElement('div');el.className='impact-fx';
-  el.style.cssText=`left:${x}px;top:${y}px;font-size:${1.2+Math.random()*.8}rem;`;
-  el.textContent=IMPACT[Math.floor(Math.random()*IMPACT.length)];
-  document.getElementById('battle-screen').appendChild(el);setTimeout(()=>el.remove(),750);
-}
-function spawnShockwaveAt(x,y){
-  const el=document.createElement('div');el.className='shockwave';
-  el.style.cssText=`left:${x-5}px;top:${y-5}px;`;
-  document.getElementById('battle-screen').appendChild(el);setTimeout(()=>el.remove(),700);
-}
-function spawnBlockShockwave(x,y){
-  const el=document.createElement('div');el.className='block-shockwave';
-  el.style.cssText=`left:${x-6}px;top:${y-6}px;`;
-  document.getElementById('battle-screen').appendChild(el);setTimeout(()=>el.remove(),600);
-}
-function spawnLeavesAt(x,y,color,count){
-  for(let i=0;i<count;i++){
-    const l=document.createElement('div');l.className='leaf-fx';
-    l.style.cssText=`left:${x+Math.random()*40-20}px;top:${y+Math.random()*30-15}px;background:${color};--lx:${(Math.random()*120-60).toFixed(0)}px;--ly:${(Math.random()*90+20).toFixed(0)}px;--lr:${(Math.random()*360).toFixed(0)}deg;--ld:${(Math.random()*.9+.5).toFixed(2)}s`;
-    document.getElementById('battle-screen').appendChild(l);setTimeout(()=>l.remove(),1600);
-  }
-}
-function spawnProjectile(emoji,fromWrap,toWrap,delay){
-  const fromEl=document.getElementById(fromWrap),toEl=document.getElementById(toWrap);
-  const fr=fromEl.getBoundingClientRect(),tr=toEl.getBoundingClientRect();
-  const sx=fr.left+fr.width*.5,sy=fr.top+fr.height*.4;
-  const ex=tr.left+tr.width*.5,ey=tr.top+tr.height*.4;
-  const proj=document.createElement('div');proj.className='projectile';
-  proj.textContent=emoji;proj.style.cssText=`left:${sx}px;top:${sy}px;position:absolute;pointer-events:none;z-index:33;font-size:1.4rem;transition:left ${(delay/1000).toFixed(2)}s linear,top ${(delay/1000).toFixed(2)}s linear;`;
-  document.getElementById('battle-screen').appendChild(proj);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{proj.style.left=ex+'px';proj.style.top=ey+'px';}));
-  setTimeout(()=>proj.remove(),delay+100);
-}
-
-
-function triggerHealVignette(healer){
-  const el=document.getElementById('hit-vignette');
-  el.classList.remove('p1-hit','p2-hit','both-hit','p1-heal','p2-heal','p1-block','p2-block');
-  void el.offsetWidth;
-  el.classList.add(healer==='p1'?'p1-heal':'p2-heal');
-  clearTimeout(el._vt);
-  el._vt=setTimeout(()=>el.classList.remove('p1-heal','p2-heal'),1300);
-}
-function triggerBlockVignette(blocker){
-  const el=document.getElementById('hit-vignette');
-  el.classList.remove('p1-hit','p2-hit','both-hit','p1-heal','p2-heal','p1-block','p2-block');
-  void el.offsetWidth;
-  el.classList.add(blocker==='p1'?'p1-block':'p2-block');
-  clearTimeout(el._vt);
-  el._vt=setTimeout(()=>el.classList.remove('p1-block','p2-block'),1000);
-}
-function triggerHitVignette(defender){
-  // defender = 'p1' or 'p2' — who got hit
-  // p1 is on the left, p2 on the right
-  const el = document.getElementById('hit-vignette');
-  el.classList.remove('p1-hit','p2-hit','both-hit','p1-heal','p2-heal','p1-block','p2-block');
-  void el.offsetWidth; // reflow to restart animation
-  if(defender==='p1') el.classList.add('p1-hit');
-  else el.classList.add('p2-hit');
-  clearTimeout(el._vt);
-  el._vt = setTimeout(()=>el.classList.remove('p1-hit','p2-hit','both-hit'), 1050);
-}
-function shakeScreen(hard=false){
-  const s=document.getElementById('battle-screen');
-  s.classList.remove('shake','shake-hard');void s.offsetWidth;
-  s.classList.add(hard?'shake-hard':'shake');
-  setTimeout(()=>s.classList.remove('shake','shake-hard'),hard?520:330);
-}
-
-// ═══════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════
-
-
-
-// ── Skin Attack FX ──
-// atks: emoji per attack index [0-4] then special [5]
-// col: flash/glow colour, glow: glow colour for character ring
-const SFX={
-  // ─ Oak ─
-  oak_golden:{
-    glow:'#ffcc00',col:'#ffcc00',
-    atks:['💛','⭐','✨','🌟','💰','👑✨⭐']
-  },
-  oak_shadow:{
-    glow:'#9900ff',col:'#6600cc',
-    atks:['🌑','💀','🌑','👁','💀','💜🌑☠️']
-  },
-  // ─ Pine ─
-  pine_flame:{
-    glow:'#ff4400',col:'#ff4400',
-    atks:['🔥','🌋','💥','🔥','🌋','🔥💥🌋']
-  },
-  pine_ghost:{
-    glow:'rgba(180,220,255,.8)',col:'#aaddff',
-    atks:['👻','❄️','💨','👁','❄️','👻💨❄️']
-  },
-  // ─ Willow ─
-  willow_crimson:{
-    glow:'#cc0020',col:'#cc0020',
-    atks:['🌾','🩸','🩸','🌀','🎋','🩸💢🌹']
-  },
-  willow_void:{
-    glow:'#7700ff',col:'#6600cc',
-    atks:['🌀','✴️','⚫','🌀','💜','🌀⚫💜']
-  },
-  // ─ Cherry ─
-  cherry_gold:{
-    glow:'#ffaa00',col:'#ffaa00',
-    atks:['🌸','💛','🍒','✨','🌼','💛🌸✨']
-  },
-  cherry_night:{
-    glow:'#aa00ff',col:'#8800cc',
-    atks:['🌸','💜','🌑','🌹','🌸','💜🌸🌑']
-  },
-  // ─ Dead ─
-  dead_lava:{
-    glow:'#ff3300',col:'#ff3300',
-    atks:['💥','☄️','🔥','☠️','☄️','🔥💥🌋']
-  },
-  dead_cursed:{
-    glow:'#8800ff',col:'#6600cc',
-    atks:['🪨','☠️','☠️','🌀','💀','☠️💀🌀']
-  },
-  // ─ Palm ─
-  palm_ice:{
-    glow:'#00ccff',col:'#00ccff',
-    atks:['🥥','🌿','🌬️','❄️','🌊','❄️🧊💠']
-  },
-  palm_night:{
-    glow:'#5500aa',col:'#440088',
-    atks:['🌙','🌑','🌙','💫','💜','🌑💫⭐']
-  },
-  // ─ Bonsai ─
-  bonsai_jade:{
-    glow:'#00aa66',col:'#00aa66',
-    atks:['💚','⚡','💎','☯️','🍃','💚✨🍃']
-  },
-  bonsai_obsidian:{
-    glow:'#5500aa',col:'#440088',
-    atks:['⬛','💜','⬛','💫','⬛','⬛💜✦']
-  },
-  // ─ Mangrove ─
-  mangrove_fire:{
-    glow:'#ff4400',col:'#ff4400',
-    atks:['🔥','💥','🔥','🌊','🌊','🔥💥🌊']
-  },
-  mangrove_stone:{
-    glow:'#776655',col:'#665544',
-    atks:['💥','⚫','🗿','🗿','⚫','🗿💥⚫']
-  },
-  // ─ Cactus ─
-  cactus_coral:{
-    glow:'#ff4477',col:'#ff4477',
-    atks:['🌺','🌺','🌺','🩷','💥','🌺🩷💥']
-  },
-  cactus_golden:{
-    glow:'#ffaa00',col:'#ffaa00',
-    atks:['👑','⭐','👑','✨','🌵','👑⭐✨']
-  },
-  // ─ Ghostwood ─
-  ghostwood_ice:{
-    glow:'rgba(160,220,255,.9)',col:'#aaddff',
-    atks:['❄️','🧊','💠','👻','❄️','❄️🧊👻']
-  },
-  ghostwood_void:{
-    glow:'#8800ff',col:'#7700ee',
-    atks:['🌀','💜','👁','🌀','💜','🌀👁💜']
-  },
-  // ─ Redwood ─
-  redwood_inferno:{
-    glow:'#ff3300',col:'#ff3300',
-    atks:['🔥','🌲','🔥','💥','☄️','🔥💥🌋']
-  },
-  redwood_onyx:{
-    glow:'#5500aa',col:'#440088',
-    atks:['⬛','💜','⬛','⬛','🌑','⬛💜🌑']
-  },
-};
-
-function doSkinFX(player, defWrap, atkIdx){
-  const charId = player==='p1' ? p1Char : p2Char;
-  const skinId = PROGRESS.equippedSkins?.[charId];
-  const fx = skinId ? SFX[skinId] : null;
-  if(!fx) return;
-
-  const defEl = document.getElementById(defWrap);
-  if(!defEl) return;
-  const r = defEl.getBoundingClientRect();
-
-  // Pick emojis: atkIdx=-1 means special (index 5)
-  const emojiSrc = fx.atks[atkIdx === -1 ? 5 : (atkIdx % 5)] || fx.atks[0];
-  // Special gives all 3 chars of the string, normal gives 1 char
-  const isSpecial = atkIdx === -1;
-  const emojis = isSpecial
-    ? [...emojiSrc.match(/\p{Emoji_Presentation}|\p{Emoji}\uFE0F|./gu)].filter(e=>e.trim())
-    : [emojiSrc];
-
-  // Screen flash
-  const flash = document.createElement('div');
-  flash.className = 'sfx-flash';
-  flash.style.background = fx.col;
-  document.body.appendChild(flash);
-  setTimeout(()=>{ try{flash.remove();}catch(e){} }, 380);
-
-  // Emoji pops — 1 for normal, up to 4 for special
-  const count = isSpecial ? Math.min(4, emojis.length + 1) : 1;
-  for(let i=0;i<count;i++){
-    const el = document.createElement('div');
-    el.className = 'sfx';
-    el.textContent = emojis[i % emojis.length];
-    const spreadX = isSpecial ? (r.left + r.width*(0.1 + i*0.26)) : (r.left + r.width*0.4);
-    const spreadY = r.top + r.height*(isSpecial ? 0.2 : 0.28);
-    el.style.left = spreadX + 'px';
-    el.style.top  = spreadY + 'px';
-    el.style.setProperty('--sd', (0.45 + i*0.08)+'s');
-    el.style.animationDelay = (i*55)+'ms';
-    document.body.appendChild(el);
-    setTimeout(()=>{ try{el.remove();}catch(e){} }, 700 + i*80);
-  }
-}
-
-// ── Character glow: apply/remove based on equipped skin ──
-function applySkinGlow(player){
-  const charId = player==='p1' ? p1Char : p2Char;
-  const skinId = PROGRESS.equippedSkins?.[charId];
-  const fx = skinId ? SFX[skinId] : null;
-  const wrapId = player==='p1' ? 'p1-wrap' : 'p2-wrap';
-  const wrap = document.getElementById(wrapId);
-  if(!wrap) return;
-  // Remove existing glow
-  wrap.querySelectorAll('.skin-glow').forEach(g=>g.remove());
-  if(!fx) return;
-  const glow = document.createElement('div');
-  glow.className = 'skin-glow';
-  glow.style.background = fx.glow;
-  glow.style.boxShadow = '0 0 24px 8px '+fx.glow;
-  wrap.style.position = 'relative';
-  wrap.insertBefore(glow, wrap.firstChild);
-}
-
-
-
-// ── Multiplayer receive + UI ──
-function _mpReceiveAction(action){
-  if(!action||!window._fwMP?.active)return;
-  const opp=window._fwMP.slot==='p1'?'p2':'p1';
-  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial);
-  else if(action.type==='block') doBlock(opp);
-  else if(action.type==='heal')  doHeal(opp);
-  else if(action.type==='char_select'){
-    if(window._fwMP.slot==='p1') p2Char=action.charId;
-    else p1Char=action.charId;
-    updateSelectUI();
-    _setOnlineStatus('Opponent chose their fighter!');
-  }
-  else if(action.type==='map_select'){
-    selectedMap=action.mapId;
-    showPreBattleAchs(p1Char,p2Char,()=>startBattle());
-  }
-}
-
-function _mpSetupBattleUI(){
-  if(!window._fwMP?.active)return;
-  const opp=window._fwMP.slot==='p1'?'p2':'p1';
-  const oppCont=document.getElementById(opp+'-controls');
-  if(oppCont) oppCont.innerHTML='<div style="text-align:center;padding:.5rem;font-family:\'Cinzel Decorative\',serif;font-size:.45rem;color:rgba(240,232,208,.3);">Opponent\'s turn...</div>';
-  const oppName=document.getElementById(opp+'-hud-name');
-  if(oppName) oppName.textContent=window._fwMP.opponent+' ⚔';
-  const myName=document.getElementById(window._fwMP.slot+'-hud-name');
-  if(myName) myName.textContent+=' (YOU)';
-}
-
-function _mpSyncCharSelect(p,id){
-  if(!window._fwMP?.active)return;
-  if(p===window._fwMP.slot) fwSendAction({type:'char_select',charId:id});
-}
-function _mpSyncMapSelect(id){
-  if(!window._fwMP?.active)return;
-  if(window._fwMP.slot==='p1') fwSendAction({type:'map_select',mapId:id});
-}
-
-// ── Init ──
-(function(){if(FW_TOKEN)fwConnect();_updateTitleUI();})();
-initProgress();
-if(!FW_TOKEN){showScreen('login-screen');}else{showTitle();}
-</script>
-</body>
-</html>
-// ═══════════════════════════════════════════════════════════════
-//  NETWORK — HTTP POLLING (no WebSockets needed)
+//  NETWORK — HTTP POLLING MULTIPLAYER
 // ═══════════════════════════════════════════════════════════════
 const FW_SERVER='https://forest-warriors-server-production.up.railway.app';
 let FW_TOKEN=localStorage.getItem('fw_token')||null;
 let FW_USER=JSON.parse(localStorage.getItem('fw_user')||'null');
+let _pollTimer=null;
+const _pollInterval=2500;
 
-// ── REST helpers ──
 async function apiPost(path,body,auth=false){
   const h={'Content-Type':'application/json'};
   if(auth&&FW_TOKEN)h.Authorization='Bearer '+FW_TOKEN;
@@ -4937,38 +3652,34 @@ async function apiGet(path,auth=false){
   catch(e){return{error:'Cannot reach server'};}
 }
 
-// ── Auth ──
-async function fwRegister(username,email,password){
-  const d=await apiPost('/auth/register',{username,email,password});
+async function fwRegister(u,e,p){
+  const d=await apiPost('/auth/register',{username:u,email:e,password:p});
   if(d.token){FW_TOKEN=d.token;FW_USER=d.user;localStorage.setItem('fw_token',FW_TOKEN);localStorage.setItem('fw_user',JSON.stringify(FW_USER));}
   return d;
 }
-async function fwLogin(login,password){
-  const d=await apiPost('/auth/login',{login,password});
+async function fwLogin(login,pw){
+  const d=await apiPost('/auth/login',{login,password:pw});
   if(d.token){FW_TOKEN=d.token;FW_USER=d.user;localStorage.setItem('fw_token',FW_TOKEN);localStorage.setItem('fw_user',JSON.stringify(FW_USER));}
   return d;
 }
 function fwLogout(){
   FW_TOKEN=null;FW_USER=null;
   localStorage.removeItem('fw_token');localStorage.removeItem('fw_user');
-  fwStopPolling();
-  window._fwMP={active:false};
+  fwStopPolling();window._fwMP={active:false};
   _updateTitleUI();showScreen('login-screen');
 }
-
-// ── Progress ──
 async function fwSyncProgress(){
   if(!FW_TOKEN)return;
-  const remote=await apiGet('/progress',true);
-  if(remote&&!remote.error){
-    if(remote.treeBucks>PROGRESS.treeBucks)PROGRESS.treeBucks=remote.treeBucks;
-    if(remote.totalWins>PROGRESS.totalWins)PROGRESS.totalWins=remote.totalWins;
-    if(remote.chars)Object.entries(remote.chars).forEach(([id,v])=>{
+  const r=await apiGet('/progress',true);
+  if(r&&!r.error){
+    if(r.treeBucks>PROGRESS.treeBucks)PROGRESS.treeBucks=r.treeBucks;
+    if(r.totalWins>PROGRESS.totalWins)PROGRESS.totalWins=r.totalWins;
+    if(r.chars)Object.entries(r.chars).forEach(([id,v])=>{
       if(!PROGRESS.chars[id])PROGRESS.chars[id]={xp:0,level:0,wins:0,battles:0};
-      const l=PROGRESS.chars[id];if(v.xp>l.xp){l.xp=v.xp;l.level=v.level;}if(v.wins>l.wins)l.wins=v.wins;
+      const l=PROGRESS.chars[id];if(v.xp>l.xp){l.xp=v.xp;l.level=v.level;}
     });
-    if(remote.ownedSkins)Object.assign(PROGRESS.ownedSkins,remote.ownedSkins);
-    if(remote.equippedSkins)Object.assign(PROGRESS.equippedSkins,remote.equippedSkins);
+    if(r.ownedSkins)Object.assign(PROGRESS.ownedSkins,r.ownedSkins);
+    if(r.equippedSkins)Object.assign(PROGRESS.equippedSkins,r.equippedSkins);
     saveProgress(PROGRESS);updateWalletUI();
   }
 }
@@ -4976,116 +3687,74 @@ async function fwPushProgress(){
   if(!FW_TOKEN)return;
   await apiPost('/progress/save',PROGRESS,true);
 }
-
-// ── HTTP Polling matchmaking ──
-let _pollTimer=null;
-let _pollInterval=2500; // ms between polls
-
-function fwStopPolling(){
-  if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}
-}
-
+function fwStopPolling(){if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}}
 async function _doPoll(){
   if(!FW_TOKEN)return;
-  const data=await apiGet('/mp/poll',true);
-  if(!data||data.error)return;
-
-  if(data.status==='matched'&&!window._fwMP?.active){
-    // Just matched!
+  const d=await apiGet('/mp/poll',true);
+  if(!d||d.error)return;
+  if(d.status==='matched'&&!window._fwMP?.active){
     fwStopPolling();
-    window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
-    _setOnlineStatus('⚔ Matched vs '+data.opponent+'! You are '+data.slot.toUpperCase());
-    // Process any immediate actions
-    if(data.actions&&data.actions.length) data.actions.forEach(_mpReceiveAction);
+    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+    _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');
+    if(d.actions&&d.actions.length)d.actions.forEach(_mpReceiveAction);
     setTimeout(()=>showSelect(),1800);
-    // Restart polling for game actions
     _pollTimer=setInterval(_doPoll,_pollInterval);
     return;
   }
-
-  if(data.status==='matched'&&window._fwMP?.active){
-    // Already in game — process incoming actions
-    if(data.actions&&data.actions.length) data.actions.forEach(_mpReceiveAction);
+  if(d.status==='matched'&&window._fwMP?.active){
+    if(d.actions&&d.actions.length)d.actions.forEach(_mpReceiveAction);
   }
-
-  if(data.status==='waiting'){
-    _setOnlineStatus('🔍 Searching for opponent...');
-  }
+  if(d.status==='waiting')_setOnlineStatus('🔍 Searching for opponent...');
 }
-
 async function fwFindMatch(){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
-  fwStopPolling();
-  window._fwMP={active:false};
+  if(!FW_TOKEN){alert('Sign in first!');return;}
+  fwStopPolling();window._fwMP={active:false};
   _setOnlineStatus('🔄 Joining queue...');
-  const data=await apiPost('/mp/queue',{},true);
-  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
-  if(data.status==='matched'){
-    // Instantly matched
-    window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
-    _setOnlineStatus('⚔ Matched vs '+data.opponent+'!');
+  const d=await apiPost('/mp/queue',{},true);
+  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+  if(d.status==='matched'){
+    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+    _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');
     setTimeout(()=>showSelect(),1800);
-  } else {
-    _setOnlineStatus('🔍 Searching... (waiting for opponent)');
+  }else{
+    _setOnlineStatus('🔍 Searching...');
   }
-  // Start polling regardless
   _pollTimer=setInterval(_doPoll,_pollInterval);
 }
-
 async function fwCreateRoom(){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
+  if(!FW_TOKEN){alert('Sign in first!');return;}
   fwStopPolling();
-  const data=await apiPost('/mp/room/create',{},true);
-  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
-  window._fwMP={active:false,roomCode:data.roomCode};
+  const d=await apiPost('/mp/room/create',{},true);
+  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+  window._fwMP={active:false,roomCode:d.roomCode};
   const el=document.getElementById('room-code-display');
-  if(el){el.textContent='Room: '+data.roomCode;el.style.display='block';}
-  _setOnlineStatus('🏠 Share code: '+data.roomCode);
+  if(el){el.textContent='Room: '+d.roomCode;el.style.display='block';}
+  _setOnlineStatus('🏠 Code: '+d.roomCode+' — share with friend!');
   _pollTimer=setInterval(_doPoll,_pollInterval);
 }
-
 function showJoinRoom(){
   const inp=document.getElementById('room-code-input');if(!inp)return;
-  inp.style.display=inp.style.display==='none'||!inp.style.display?'block':'none';
-  if(inp.style.display==='block'){
-    inp.focus();
-    inp.onkeydown=async e=>{
-      if(e.key==='Enter'&&inp.value.length>=4){
-        await fwJoinRoom(inp.value.trim().toUpperCase());
-        inp.style.display='none';
-      }
-    };
-  }
+  const show=!inp.style.display||inp.style.display==='none';
+  inp.style.display=show?'block':'none';
+  if(show){inp.focus();inp.onkeydown=async e=>{if(e.key==='Enter'&&inp.value.length>=4){await fwJoinRoom(inp.value.toUpperCase());inp.style.display='none';}};}
 }
-
 async function fwJoinRoom(code){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
+  if(!FW_TOKEN){alert('Sign in first!');return;}
   fwStopPolling();
-  _setOnlineStatus('🔄 Joining room '+code+'...');
-  const data=await apiPost('/mp/room/join',{code},true);
-  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
-  window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
-  _setOnlineStatus('⚔ Joined! vs '+data.opponent);
+  _setOnlineStatus('🔄 Joining '+code+'...');
+  const d=await apiPost('/mp/room/join',{code},true);
+  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+  window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+  _setOnlineStatus('⚔ Joined! vs '+d.opponent);
   setTimeout(()=>showSelect(),1800);
   _pollTimer=setInterval(_doPoll,_pollInterval);
 }
-
 async function fwSendAction(action){
   if(!FW_TOKEN||!window._fwMP?.active)return;
   await apiPost('/mp/action',{action},true);
 }
-
-function fwConnect(){
-  // No-op: we use HTTP polling now, no WebSocket needed
-  _updateTitleUI();
-  fwSyncProgress();
-}
-
-// ── UI helpers ──
-function _setOnlineStatus(msg){
-  const el=document.getElementById('online-status');
-  if(el)el.textContent=msg;
-}
+function fwConnect(){_updateTitleUI();fwSyncProgress();}
+function _setOnlineStatus(msg){const el=document.getElementById('online-status');if(el)el.textContent=msg;}
 function _updateTitleUI(){
   const loggedIn=!!FW_USER;
   const ui=document.getElementById('title-user-info');
@@ -5099,8 +3768,6 @@ function _updateTitleUI(){
   if(panel)panel.style.display=loggedIn?'flex':'none';
   if(dot)dot.textContent=loggedIn?'🟢':'⚫';
 }
-
-// ── Login UI ──
 let _loginTab='login';
 function switchLoginTab(tab){
   _loginTab=tab;
@@ -5119,13 +3786,13 @@ async function submitLogin(){
   if(_loginTab==='login'){
     const login=document.getElementById('login-username').value.trim();
     const pw=document.getElementById('login-password').value;
-    if(!login||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='SIGN IN';return;}
+    if(!login||!pw){errEl.textContent='Fill in all fields.';btn.disabled=false;btn.textContent='SIGN IN';return;}
     result=await fwLogin(login,pw);
   }else{
     const username=document.getElementById('reg-username').value.trim();
     const email=document.getElementById('reg-email').value.trim();
     const pw=document.getElementById('reg-password').value;
-    if(!username||!email||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='CREATE ACCOUNT';return;}
+    if(!username||!email||!pw){errEl.textContent='Fill in all fields.';btn.disabled=false;btn.textContent='CREATE ACCOUNT';return;}
     result=await fwRegister(username,email,pw);
   }
   if(result.error){
@@ -5137,3 +3804,12 @@ async function submitLogin(){
 }
 function skipLogin(){showTitle();}
 
+// ── Init ──
+(function(){_updateTitleUI();if(FW_TOKEN)fwSyncProgress();})();
+initProgress();
+dismissCredits();
+if(!FW_TOKEN){showScreen('login-screen');}else{showTitle();}
+
+</script>
+</body>
+</html>
