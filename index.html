@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Forest Warriors</title>
+<title>Forest Warriors v5</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,600;1,300&display=swap');
 
@@ -809,33 +809,6 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
 .shop-header h2{font-family:'Cinzel Decorative',serif;font-size:clamp(.8rem,2.8vmin,1.5rem);color:var(--gold);}
 .shop-header p{font-style:italic;color:rgba(240,232,208,.4);font-size:clamp(.44rem,1.3vmin,.65rem);margin-top:.2vmin;}
 .shop-wallet{font-family:'Cinzel Decorative',serif;font-size:clamp(.45rem,1.5vmin,.7rem);color:var(--treebuck);text-align:center;margin-bottom:.8vmin;}
-.shop-char-tabs{display:flex;gap:.4vmin;justify-content:center;margin-bottom:.8vmin;flex-wrap:wrap;}
-.shop-char-tab{padding:.25rem .55rem;background:transparent;border:1.5px solid rgba(232,200,74,.2);color:rgba(232,200,74,.45);font-family:'Cinzel Decorative',serif;font-size:clamp(.28rem,.9vmin,.44rem);letter-spacing:.04em;cursor:pointer;border-radius:3px;transition:all .18s;}
-.shop-char-tab.active{background:rgba(232,200,74,.1);border-color:var(--gold);color:var(--gold);}
-.shop-char-tab:hover{border-color:rgba(232,200,74,.4);color:rgba(232,200,74,.7);}
-.shop-skins-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(90px,18vmin,140px),1fr));gap:1.2vmin;width:min(96vw,600px);margin:0 auto;}
-.skin-card{background:rgba(10,5,2,.85);border:1.5px solid rgba(232,200,74,.15);border-radius:6px;padding:.7vmin;text-align:center;position:relative;overflow:hidden;cursor:pointer;transition:all .2s ease;}
-.skin-card:hover{border-color:rgba(232,200,74,.5);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.5);}
-.skin-card.owned{border-color:rgba(170,238,68,.4);}
-.skin-card.equipped{border-color:var(--gold);box-shadow:0 0 16px rgba(232,200,74,.4);}
-.skin-card.locked-skin{opacity:.55;cursor:default;}
-.skin-card.locked-skin:hover{transform:none;box-shadow:none;}
-.skin-preview{width:100%;height:clamp(50px,14vmin,90px);display:flex;align-items:flex-end;justify-content:center;padding:.3vmin;}
-.skin-preview svg{max-width:85%;max-height:100%;}
-.skin-name{font-family:'Cinzel Decorative',serif;font-size:clamp(.28rem,1vmin,.46rem);color:var(--gold);letter-spacing:.03em;margin-top:.3vmin;line-height:1.3;}
-.skin-cost{font-size:clamp(.26rem,.9vmin,.42rem);color:var(--treebuck);margin-top:.15vmin;}
-.skin-status{font-size:clamp(.22rem,.8vmin,.38rem);color:rgba(240,232,208,.4);font-style:italic;margin-top:.1vmin;}
-.skin-status.equipped-txt{color:var(--gold);}
-.skin-status.owned-txt{color:var(--treebuck);}
-.skin-buy-btn{margin-top:.4vmin;padding:.18rem .4rem;background:rgba(232,200,74,.08);border:1px solid rgba(232,200,74,.3);color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:clamp(.24rem,.85vmin,.4rem);cursor:pointer;border-radius:2px;transition:all .18s;display:block;width:100%;}
-.skin-buy-btn:hover{background:rgba(232,200,74,.2);box-shadow:0 0 8px rgba(232,200,74,.25);}
-.skin-buy-btn:disabled{opacity:.3;cursor:not-allowed;}
-.skin-buy-btn.equip-btn{border-color:rgba(170,238,68,.4);color:var(--treebuck);}
-.skin-buy-btn.equip-btn:hover{background:rgba(170,238,68,.15);}
-.skin-buy-btn.equipped-btn{border-color:var(--gold);color:var(--gold);background:rgba(232,200,74,.08);cursor:default;}
-.skin-buy-btn.equipped-btn:hover{box-shadow:none;background:rgba(232,200,74,.08);}
-
-/* Char card equipped skin indicator */
 .char-card.has-skin{border-color:rgba(200,160,255,.4)!important;}
 .char-card.has-skin .char-card-name::after{content:'✨';margin-left:2px;font-size:.7em;}
 
@@ -850,6 +823,118 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
   opacity:.85;
 }
 
+
+/* Heal vignette — green glow from healer's side */
+#hit-vignette.p1-heal{animation:vignetteHealLeft 1.2s ease forwards;}
+#hit-vignette.p2-heal{animation:vignetteHealRight 1.2s ease forwards;}
+@keyframes vignetteHealLeft{
+  0%  {opacity:0;box-shadow:inset 0 0 0 rgba(0,200,80,0);}
+  8%  {opacity:1;box-shadow:inset 120px 0 180px rgba(0,220,80,.85),inset 40px 0 80px rgba(0,180,60,.6);}
+  30% {opacity:1;box-shadow:inset 90px 0 140px rgba(0,200,80,.65),inset 30px 0 60px rgba(0,160,50,.45);}
+  65% {opacity:.6;box-shadow:inset 50px 0 90px rgba(0,180,60,.4),inset 15px 0 40px rgba(0,140,40,.25);}
+  100%{opacity:0;box-shadow:inset 0 0 0 rgba(0,200,80,0);}
+}
+@keyframes vignetteHealRight{
+  0%  {opacity:0;box-shadow:inset 0 0 0 rgba(0,200,80,0);}
+  8%  {opacity:1;box-shadow:inset -120px 0 180px rgba(0,220,80,.85),inset -40px 0 80px rgba(0,180,60,.6);}
+  30% {opacity:1;box-shadow:inset -90px 0 140px rgba(0,200,80,.65),inset -30px 0 60px rgba(0,160,50,.45);}
+  65% {opacity:.6;box-shadow:inset -50px 0 90px rgba(0,180,60,.4),inset -15px 0 40px rgba(0,140,40,.25);}
+  100%{opacity:0;box-shadow:inset 0 0 0 rgba(0,200,80,0);}
+}
+
+/* Block vignette — blue glow from blocker's side */
+#hit-vignette.p1-block{animation:vignetteBlockLeft 0.9s ease forwards;}
+#hit-vignette.p2-block{animation:vignetteBlockRight 0.9s ease forwards;}
+@keyframes vignetteBlockLeft{
+  0%  {opacity:0;box-shadow:inset 0 0 0 rgba(0,180,255,0);}
+  6%  {opacity:1;box-shadow:inset 120px 0 180px rgba(0,200,255,.9),inset 40px 0 80px rgba(0,160,220,.65);}
+  22% {opacity:1;box-shadow:inset 90px 0 140px rgba(0,190,255,.7),inset 30px 0 60px rgba(0,150,210,.5);}
+  60% {opacity:.55;box-shadow:inset 50px 0 90px rgba(0,170,240,.4),inset 15px 0 40px rgba(0,130,200,.25);}
+  100%{opacity:0;box-shadow:inset 0 0 0 rgba(0,180,255,0);}
+}
+@keyframes vignetteBlockRight{
+  0%  {opacity:0;box-shadow:inset 0 0 0 rgba(0,180,255,0);}
+  6%  {opacity:1;box-shadow:inset -120px 0 180px rgba(0,200,255,.9),inset -40px 0 80px rgba(0,160,220,.65);}
+  22% {opacity:1;box-shadow:inset -90px 0 140px rgba(0,190,255,.7),inset -30px 0 60px rgba(0,150,210,.5);}
+  60% {opacity:.55;box-shadow:inset -50px 0 90px rgba(0,170,240,.4),inset -15px 0 40px rgba(0,130,200,.25);}
+  100%{opacity:0;box-shadow:inset 0 0 0 rgba(0,180,255,0);}
+}
+
+
+/* ════ LOGIN / REGISTER SCREEN ════ */
+#login-screen{background:radial-gradient(ellipse at 50% 30%,#0d1a0d,#050208 70%);padding:2vmin;}
+.login-box{background:rgba(10,5,2,.92);border:1.5px solid rgba(232,200,74,.3);border-radius:8px;padding:3vmin 4vmin;width:min(88vw,380px);margin:0 auto;display:flex;flex-direction:column;gap:1.2vmin;}
+.login-title{font-family:'Cinzel Decorative',serif;font-size:clamp(.9rem,3vmin,1.6rem);color:var(--gold);text-align:center;letter-spacing:.08em;}
+.login-subtitle{font-style:italic;color:rgba(240,232,208,.4);font-size:clamp(.45rem,1.4vmin,.7rem);text-align:center;margin-top:-.4vmin;}
+.login-tabs{display:flex;gap:.5vmin;margin:.5vmin 0;}
+.login-tab{flex:1;padding:.5rem;background:transparent;border:1.5px solid rgba(232,200,74,.25);color:rgba(232,200,74,.5);font-family:'Cinzel Decorative',serif;font-size:clamp(.38rem,1.2vmin,.6rem);letter-spacing:.06em;cursor:pointer;border-radius:3px;transition:all .2s;}
+.login-tab.active{background:rgba(232,200,74,.12);border-color:var(--gold);color:var(--gold);}
+.login-input{width:100%;padding:.6rem .8rem;background:rgba(255,255,255,.05);border:1.5px solid rgba(232,200,74,.2);border-radius:4px;color:var(--text);font-family:'Crimson Pro',serif;font-size:clamp(.7rem,2vmin,1rem);outline:none;transition:border-color .2s;box-sizing:border-box;}
+.login-input:focus{border-color:rgba(232,200,74,.6);}
+.login-input::placeholder{color:rgba(240,232,208,.3);}
+.login-error{color:#ff5555;font-size:clamp(.38rem,1.2vmin,.58rem);font-style:italic;text-align:center;min-height:1rem;}
+.login-success{color:var(--treebuck);font-size:clamp(.38rem,1.2vmin,.58rem);font-style:italic;text-align:center;}
+.login-divider{text-align:center;color:rgba(240,232,208,.2);font-size:.6rem;margin:.3vmin 0;}
+.login-skip{background:none;border:none;color:rgba(240,232,208,.25);font-family:'Crimson Pro',serif;font-style:italic;cursor:pointer;font-size:clamp(.42rem,1.3vmin,.65rem);text-align:center;padding:.3rem;}
+.login-skip:hover{color:rgba(240,232,208,.5);}
+
+/* Logged-in user info on title screen */
+#title-user-info{
+  font-family:'Cinzel Decorative',serif;
+  font-size:clamp(.4rem,1.3vmin,.62rem);
+  color:rgba(232,200,74,.6);
+  margin-bottom:.3rem;
+  letter-spacing:.06em;
+}
+#title-logout-btn{
+  background:none;border:1px solid rgba(232,200,74,.2);
+  color:rgba(232,200,74,.4);font-family:'Crimson Pro',serif;
+  font-style:italic;cursor:pointer;font-size:clamp(.38rem,1.1vmin,.58rem);
+  padding:.2rem .6rem;border-radius:3px;margin-top:.2rem;
+  transition:all .2s;
+}
+#title-logout-btn:hover{border-color:rgba(232,200,74,.5);color:rgba(232,200,74,.8);}
+
+/* Online multiplayer panel on title */
+#online-panel{
+  margin-top:.5rem;padding:.6rem 1rem;
+  background:rgba(0,200,100,.06);border:1.5px solid rgba(0,200,100,.3);
+  border-radius:5px;display:flex;flex-direction:column;align-items:center;gap:.4vmin;
+}
+.online-panel-title{font-family:'Cinzel Decorative',serif;font-size:clamp(.38rem,1.2vmin,.6rem);color:#44ffaa;letter-spacing:.06em;}
+.online-btns{display:flex;gap:.5vmin;flex-wrap:wrap;justify-content:center;}
+.btn-online{padding:.35rem .9rem;background:rgba(0,200,100,.08);border:1.5px solid rgba(0,200,100,.4);color:#44ffaa;font-family:'Cinzel Decorative',serif;font-size:clamp(.32rem,1.1vmin,.54rem);letter-spacing:.05em;cursor:pointer;border-radius:3px;transition:all .2s;}
+.btn-online:hover{background:rgba(0,200,100,.2);box-shadow:0 0 12px rgba(0,200,100,.3);}
+#online-status{font-size:clamp(.32rem,1vmin,.5rem);color:rgba(240,232,208,.4);font-style:italic;}
+#room-code-display{font-family:'Cinzel Decorative',serif;font-size:clamp(.5rem,1.8vmin,.9rem);color:var(--gold);letter-spacing:.2em;display:none;}
+#room-code-input{width:120px;padding:.4rem .6rem;background:rgba(255,255,255,.05);border:1.5px solid rgba(232,200,74,.3);border-radius:4px;color:var(--text);font-family:'Cinzel Decorative',serif;font-size:.7rem;text-align:center;letter-spacing:.2em;outline:none;display:none;}
+
+
+
+
+
+/* ── Skin FX ── */
+.sfx{position:fixed;pointer-events:none;z-index:999;font-size:1.4rem;
+  animation:sfxPop var(--sd,.55s) ease forwards;will-change:transform,opacity;}
+@keyframes sfxPop{
+  0%  {transform:scale(0.3) rotate(-10deg);opacity:1;}
+  55% {transform:scale(1.25) rotate(5deg) translateY(-16px);opacity:1;}
+  100%{transform:scale(0.5) rotate(15deg) translateY(-48px);opacity:0;}
+}
+.sfx-flash{position:fixed;inset:0;pointer-events:none;z-index:998;
+  opacity:.22;animation:sfxFlash .35s ease forwards;}
+@keyframes sfxFlash{to{opacity:0;}}
+
+/* ── Premium skin character glow ── */
+.skin-glow{
+  position:absolute;inset:-8px;border-radius:50%;pointer-events:none;
+  z-index:1;opacity:.55;filter:blur(12px);
+  animation:skinGlowPulse 2.5s ease-in-out infinite;
+}
+@keyframes skinGlowPulse{
+  0%,100%{opacity:.4;transform:scale(.95);}
+  50%{opacity:.7;transform:scale(1.05);}
+}
 </style>
 </head>
 <body>
@@ -895,16 +980,35 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
 </div>
 
 
-<!-- SHOP SCREEN -->
-<div class="screen hidden" id="shop-screen">
-  <div class="shop-header">
-    <h2>🛒 Tree Bucks Shop</h2>
-    <p>Buy skins to customise your warriors</p>
+
+<!-- LOGIN / REGISTER SCREEN -->
+<div class="screen hidden" id="login-screen">
+  <div class="login-box">
+    <div class="login-title">🌲 FOREST WARRIORS</div>
+    <div class="login-subtitle">Sign in to save progress &amp; play online</div>
+    <div class="login-tabs">
+      <button class="login-tab active" id="tab-login" onclick="switchLoginTab('login')">SIGN IN</button>
+      <button class="login-tab" id="tab-register" onclick="switchLoginTab('register')">CREATE ACCOUNT</button>
+    </div>
+    <!-- Login form -->
+    <div id="form-login">
+      <input class="login-input" id="login-username" type="text" placeholder="Username or email" autocomplete="username"/>
+      <div style="height:.5vmin"></div>
+      <input class="login-input" id="login-password" type="password" placeholder="Password" autocomplete="current-password"/>
+    </div>
+    <!-- Register form -->
+    <div id="form-register" style="display:none">
+      <input class="login-input" id="reg-username" type="text" placeholder="Username (3-20 chars)" autocomplete="username"/>
+      <div style="height:.5vmin"></div>
+      <input class="login-input" id="reg-email" type="email" placeholder="Email address" autocomplete="email"/>
+      <div style="height:.5vmin"></div>
+      <input class="login-input" id="reg-password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password"/>
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="btn-primary" id="login-submit-btn" onclick="submitLogin()" style="width:100%;margin-top:.3vmin;">SIGN IN</button>
+    <div class="login-divider">— or —</div>
+    <button class="login-skip" onclick="skipLogin()">Continue as guest (progress saved locally only)</button>
   </div>
-  <div class="shop-wallet" id="shop-wallet-display">🌿 0 Tree Bucks</div>
-  <div class="shop-char-tabs" id="shop-char-tabs"></div>
-  <div class="shop-skins-grid" id="shop-skins-grid"></div>
-  <button class="btn-primary" style="margin-top:1vmin;" onclick="showTitle()">← Back</button>
 </div>
 
 <!-- CREDITS -->
@@ -919,10 +1023,24 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
 <div class="screen" id="title-screen">
   <div class="title-main">FOREST WARRIORS</div>
   <div class="title-sub">The Ancient Tree Battles</div>
+  <div id="title-user-info" style="display:none"></div>
   <p class="title-story">When the blood moon rises, ancient warriors of root and bark emerge from the depths. Choose your champion. Attack, block, and outlast your foe to claim the forest throne.</p>
   <button class="btn-primary" onclick="showSelect()">CHOOSE YOUR FIGHTER</button>
+  <div id="online-panel" style="display:none">
+    <div class="online-panel-title">⚔ PLAY ONLINE <span id="ws-dot" style="font-size:.6rem;opacity:.6">⚫</span></div>
+    <div class="online-btns">
+      <button class="btn-online" onclick="fwFindMatch()">🔍 Find Match</button>
+      <button class="btn-online" onclick="fwCreateRoom()">🏠 Create Room</button>
+      <button class="btn-online" onclick="showJoinRoom()">🚪 Join Room</button>
+    </div>
+    <input id="room-code-input" placeholder="ENTER CODE" maxlength="6" oninput="this.value=this.value.toUpperCase()"/>
+    <div id="room-code-display"></div>
+    <div id="online-status"></div>
+  </div>
   <button class="btn-primary" style="margin-top:.6rem;" onclick="showAchievements()">&#127942; ACHIEVEMENTS</button>
   <button class="btn-primary" style="margin-top:.4rem;" onclick="showShop()">&#128722; SHOP</button>
+  <button id="title-logout-btn" style="display:none" onclick="fwLogout()">Sign out</button>
+  <button class="login-skip" onclick="showScreen('login-screen')" id="title-signin-btn">Sign in / Create account</button>
 </div>
 
 <!-- SELECT -->
@@ -1539,6 +1657,7 @@ function selectMap(id){
   selectedMap = id;
   document.querySelectorAll('.map-card').forEach(c => c.classList.toggle('selected', c.dataset.id===id));
   updateMapUI();
+  _mpSyncMapSelect(id);
 }
 
 function updateMapUI(){
@@ -1554,7 +1673,16 @@ function updateMapUI(){
   }
 }
 
-function confirmMap(){if(!selectedMap)return;showPreBattleAchs(p1Char,p2Char,()=>startBattle());}
+function confirmMap(){
+  if(!selectedMap)return;
+  // In multiplayer, only P1 confirms map and sends it
+  // P2 just waits for the map_select action
+  if(window._fwMP?.active && window._fwMP.slot === 'p2'){
+    // P2 receives map via _mpReceiveAction, startBattle called there
+    return;
+  }
+  showPreBattleAchs(p1Char,p2Char,()=>startBattle());
+}
 
 function applyMap(mapId){
   const map = MAPS.find(m=>m.id===mapId) || MAPS[0];
@@ -2323,7 +2451,7 @@ function updateWalletUI(){const el=document.getElementById('wallet-amt');if(el)e
 function grantBattleXP(charId,won){
   const entry=PROGRESS.chars[charId];if(!entry)return{xpGain:0,bucksGain:0,newAchs:[],newLevel:0,prevLevel:0};
   const prevLevel=entry.level;
-  const xpGain=won?40:15;const bucksGain=won?25:8;
+  const xpGain=won?120:45;const bucksGain=won?60:20;
   entry.xp+=xpGain;entry.level=xpToLevel(entry.xp);entry.battles++;if(won)entry.wins++;
   PROGRESS.treeBucks+=bucksGain;PROGRESS.totalBattles++;if(won)PROGRESS.totalWins++;
   const newAchs=[];
@@ -2334,6 +2462,7 @@ function grantBattleXP(charId,won){
     }
   });
   saveProgress(PROGRESS);updateWalletUI();updateCharCards();updateFighterLevelTooltips();
+  fwPushProgress();
   return{xpGain,bucksGain,newAchs,newLevel:entry.level,prevLevel};
 }
 
@@ -2344,7 +2473,7 @@ function updateCharCards(){
       const entry=PROGRESS.chars[ch.id];const level=entry?entry.level:0;const xp=entry?entry.xp:0;
       // Refresh preview with equipped skin
       const prev=card.querySelector('.char-preview');
-      if(prev&&getEquippedSvg) prev.innerHTML=getEquippedSvg(ch.id);
+      if(prev) prev.innerHTML=getCharSVG(ch.id);
       // Has non-default skin?
       const eq=(PROGRESS.skins||{})[ch.id];
       card.classList.toggle('has-skin',!!eq&&eq!==ch.id+'_default');
@@ -2413,70 +2542,936 @@ function closeAchPopup(){const p=document.getElementById('ach-popup');p.classLis
 // Skin: {id, name, cost, svgFn, tint description}
 const SKINS = {
   oak:[
-    {id:'oak_base',   name:'Classic Oak',   cost:0,   tag:'BASE',  hue:null},
-    {id:'oak_winter', name:'Winter Oak',     cost:80,  tag:'',      hue:'saturate(0.2) hue-rotate(200deg) brightness(1.3)'},
-    {id:'oak_golden', name:'Golden Oak',     cost:150, tag:'',      hue:'sepia(0.8) saturate(1.5) hue-rotate(15deg) brightness(1.2)'},
-    {id:'oak_shadow', name:'Shadow Oak',     cost:220, tag:'RARE',  hue:'brightness(0.4) saturate(0.3) hue-rotate(260deg)'},
+    {id:'oak_base',   name:'Classic Oak',     cost:0,   tag:'BASE', svgFn:null},
+    {id:'oak_winter', name:'Winter Oak',       cost:80,  tag:'',
+      svgFn:()=>`<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg" style="width:clamp(90px,14vw,150px)">
+        <path d="M72 200 Q55 192 34 200" stroke="#4a6a8a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M80 202 Q96 192 115 199" stroke="#4a6a8a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="62" y="128" width="30" height="76" rx="8" fill="#5a7a9a"/>
+        <path d="M66 128 Q64 155 66 204" stroke="#7aaabb" stroke-width="5" fill="none" opacity=".3"/>
+        <path d="M67 142 Q42 128 18 114" stroke="#3a5a7a" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M86 135 Q112 120 134 105" stroke="#3a5a7a" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M77 128 Q76 108 75 90" stroke="#3a5a7a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <ellipse cx="77" cy="72" rx="66" ry="52" fill="#1a2a3a"/>
+        <ellipse cx="50" cy="62" rx="42" ry="34" fill="#243a50"/>
+        <ellipse cx="108" cy="65" rx="40" ry="32" fill="#1e3448"/>
+        <ellipse cx="77" cy="44" rx="52" ry="40" fill="#2a4a6a"/>
+        <ellipse cx="56" cy="34" rx="34" ry="26" fill="#4a8aaa"/>
+        <ellipse cx="100" cy="38" rx="32" ry="24" fill="#3a7a9a"/>
+        <ellipse cx="77" cy="20" rx="42" ry="30" fill="#6aaabb"/>
+        <ellipse cx="60" cy="14" rx="26" ry="18" fill="#8acad8" opacity=".85"/>
+        <ellipse cx="96" cy="16" rx="24" ry="16" fill="#7abcc8" opacity=".85"/>
+        <!-- snow caps -->
+        <ellipse cx="77" cy="6" rx="22" ry="8" fill="white" opacity=".85"/>
+        <ellipse cx="56" cy="14" rx="14" ry="6" fill="white" opacity=".7"/>
+        <ellipse cx="100" cy="12" rx="12" ry="5" fill="white" opacity=".65"/>
+        <!-- icy eyes -->
+        <circle cx="72" cy="163" r="3" fill="#00eeff" opacity=".95"/>
+        <circle cx="82" cy="163" r="3" fill="#00eeff" opacity=".95"/>
+        <path d="M70 169 Q77 166 84 169" stroke="#00ccff" stroke-width="2" fill="none"/>
+      </svg>`},
+    {id:'oak_golden', name:'Golden Oak',       cost:150, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg" style="width:clamp(90px,14vw,150px)">
+        <path d="M72 200 Q55 192 34 200" stroke="#7a5010" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M80 202 Q96 192 115 199" stroke="#7a5010" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="62" y="128" width="30" height="76" rx="8" fill="#8a6020"/>
+        <path d="M67 142 Q42 128 18 114" stroke="#6a4010" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M86 135 Q112 120 134 105" stroke="#6a4010" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M77 128 Q76 108 75 90" stroke="#6a4010" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <ellipse cx="77" cy="72" rx="66" ry="52" fill="#3a2800"/>
+        <ellipse cx="50" cy="62" rx="42" ry="34" fill="#5a3a00"/>
+        <ellipse cx="108" cy="65" rx="40" ry="32" fill="#4a3000"/>
+        <ellipse cx="77" cy="44" rx="52" ry="40" fill="#8a5a10"/>
+        <ellipse cx="56" cy="34" rx="34" ry="26" fill="#c88020"/>
+        <ellipse cx="100" cy="38" rx="32" ry="24" fill="#b87010"/>
+        <ellipse cx="77" cy="20" rx="42" ry="30" fill="#e8a030"/>
+        <ellipse cx="60" cy="14" rx="26" ry="18" fill="#f0b840" opacity=".9"/>
+        <ellipse cx="96" cy="16" rx="24" ry="16" fill="#e8a828" opacity=".9"/>
+        <ellipse cx="77" cy="6" rx="22" ry="14" fill="#ffcc44" opacity=".8"/>
+        <!-- gold shine sparkles -->
+        <circle cx="55" cy="28" r="3" fill="#ffe060" opacity=".7"/>
+        <circle cx="98" cy="22" r="2.5" fill="#ffe060" opacity=".65"/>
+        <circle cx="77" cy="10" r="3.5" fill="white" opacity=".5"/>
+        <!-- grumpy gold eyes -->
+        <circle cx="72" cy="163" r="3" fill="#ff8800" opacity=".95"/>
+        <circle cx="82" cy="163" r="3" fill="#ff8800" opacity=".95"/>
+        <path d="M69 158 L75 162" stroke="#ff8800" stroke-width="1.5"/>
+        <path d="M85 158 L79 162" stroke="#ff8800" stroke-width="1.5"/>
+        <path d="M70 169 Q77 172 84 169" stroke="#ff6600" stroke-width="2" fill="none"/>
+      </svg>`},
+    {id:'oak_shadow', name:'Shadow Oak',       cost:220, tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg" style="width:clamp(90px,14vw,150px)">
+        <path d="M72 200 Q55 192 34 200" stroke="#1a0a2a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M80 202 Q96 192 115 199" stroke="#1a0a2a" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="62" y="128" width="30" height="76" rx="8" fill="#120820"/>
+        <path d="M67 142 Q42 128 18 114" stroke="#0a0518" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M86 135 Q112 120 134 105" stroke="#0a0518" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M77 128 Q76 108 75 90" stroke="#0a0518" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <ellipse cx="77" cy="72" rx="66" ry="52" fill="#050210"/>
+        <ellipse cx="50" cy="62" rx="42" ry="34" fill="#0a0518"/>
+        <ellipse cx="108" cy="65" rx="40" ry="32" fill="#080414"/>
+        <ellipse cx="77" cy="44" rx="52" ry="40" fill="#140830"/>
+        <ellipse cx="56" cy="34" rx="34" ry="26" fill="#1e0a44"/>
+        <ellipse cx="100" cy="38" rx="32" ry="24" fill="#180840"/>
+        <ellipse cx="77" cy="20" rx="42" ry="30" fill="#280c58"/>
+        <ellipse cx="60" cy="14" rx="26" ry="18" fill="#3a1270" opacity=".9"/>
+        <ellipse cx="96" cy="16" rx="24" ry="16" fill="#2e0e60" opacity=".9"/>
+        <!-- purple glow wisps -->
+        <ellipse cx="55" cy="28" rx="12" ry="8" fill="#aa44ff" opacity=".18"/>
+        <ellipse cx="98" cy="22" rx="10" ry="7" fill="#aa44ff" opacity=".15"/>
+        <!-- glowing void eyes -->
+        <circle cx="72" cy="163" r="4" fill="#aa00ff" opacity=".95"/>
+        <circle cx="82" cy="163" r="4" fill="#aa00ff" opacity=".95"/>
+        <circle cx="72" cy="163" r="2" fill="white" opacity=".9"/>
+        <circle cx="82" cy="163" r="2" fill="white" opacity=".9"/>
+        <path d="M70 169 Q77 165 84 169" stroke="#aa00ff" stroke-width="2" fill="none"/>
+      </svg>`},
   ],
   pine:[
-    {id:'pine_base',  name:'Classic Pine',  cost:0,   tag:'BASE',  hue:null},
-    {id:'pine_frost', name:'Frost Pine',     cost:80,  tag:'',      hue:'hue-rotate(200deg) saturate(1.4) brightness(1.25)'},
-    {id:'pine_flame', name:'Flame Pine',     cost:150, tag:'',      hue:'hue-rotate(120deg) saturate(2) brightness(0.9)'},
-    {id:'pine_ghost', name:'Ghost Pine',     cost:220, tag:'RARE',  hue:'brightness(1.6) saturate(0.1) contrast(0.8)'},
+    {id:'pine_base',  name:'Classic Pine',    cost:0,   tag:'BASE', svgFn:null},
+    {id:'pine_frost', name:'Frost Pine',       cost:80,  tag:'',
+      svgFn:()=>`<svg viewBox="0 0 130 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(72px,11vw,120px)">
+        <path d="M55 214 Q40 204 24 211" stroke="#5a7a9a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M75 214 Q90 204 106 210" stroke="#5a7a9a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <rect x="55" y="152" width="22" height="65" rx="5" fill="#6a8aaa"/>
+        <!-- frost tiers -->
+        <polygon points="65,6 12,82 118,82" fill="#1a3a5a"/>
+        <polygon points="65,6 38,60 92,60" fill="#4a7a9a" opacity=".6"/>
+        <polygon points="65,28 8,108 122,108" fill="#2a5a80"/>
+        <polygon points="65,28 38,85 92,85" fill="#5a8aaa" opacity=".55"/>
+        <polygon points="65,52 4,136 126,136" fill="#1e4a6a"/>
+        <polygon points="65,52 36,112 94,112" fill="#4a7a98" opacity=".5"/>
+        <polygon points="65,78 2,158 128,158" fill="#224d70"/>
+        <polygon points="65,78 34,136 96,136" fill="#5888a8" opacity=".5"/>
+        <!-- snow caps -->
+        <ellipse cx="65" cy="68" rx="40" ry="7" fill="white" opacity=".6"/>
+        <ellipse cx="65" cy="95" rx="50" ry="7" fill="white" opacity=".5"/>
+        <ellipse cx="65" cy="122" rx="58" ry="7" fill="white" opacity=".45"/>
+        <ellipse cx="65" cy="6" rx="8" ry="5" fill="white" opacity=".85"/>
+        <!-- icicles -->
+        <line x1="30" y1="82" x2="28" y2="92" stroke="#aaddff" stroke-width="1.5" opacity=".8"/>
+        <line x1="50" y1="82" x2="48" y2="94" stroke="#aaddff" stroke-width="1.5" opacity=".75"/>
+        <line x1="90" y1="82" x2="92" y2="93" stroke="#aaddff" stroke-width="1.5" opacity=".8"/>
+        <line x1="110" y1="82" x2="112" y2="91" stroke="#aaddff" stroke-width="1.5" opacity=".75"/>
+        <!-- cold eyes -->
+        <circle cx="61" cy="166" r="2.5" fill="#00ddff" opacity=".95"/>
+        <circle cx="71" cy="166" r="2.5" fill="#00ddff" opacity=".95"/>
+        <path d="M58 172 Q66 169 74 172" stroke="#00bbee" stroke-width="1.6" fill="none"/>
+      </svg>`},
+    {id:'pine_flame', name:'Flame Pine',       cost:150, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 130 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(72px,11vw,120px)">
+        <path d="M55 214 Q40 204 24 211" stroke="#5a1a00" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M75 214 Q90 204 106 210" stroke="#5a1a00" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <rect x="55" y="152" width="22" height="65" rx="5" fill="#6a2200"/>
+        <!-- flame tiers -->
+        <polygon points="65,6 12,82 118,82" fill="#3a0800"/>
+        <polygon points="65,6 38,60 92,60" fill="#aa2800" opacity=".7"/>
+        <polygon points="65,28 8,108 122,108" fill="#882000"/>
+        <polygon points="65,28 38,85 92,85" fill="#cc3300" opacity=".6"/>
+        <polygon points="65,52 4,136 126,136" fill="#aa2200"/>
+        <polygon points="65,52 36,112 94,112" fill="#ee4400" opacity=".55"/>
+        <polygon points="65,78 2,158 128,158" fill="#cc2a00"/>
+        <polygon points="65,78 34,136 96,136" fill="#ff5500" opacity=".5"/>
+        <!-- flame tips at each peak -->
+        <ellipse cx="65" cy="5" rx="6" ry="10" fill="#ff8800" opacity=".9"/>
+        <ellipse cx="65" cy="2" rx="3" ry="6" fill="#ffcc00" opacity=".85"/>
+        <!-- ember glow -->
+        <circle cx="40" cy="70" r="2" fill="#ff6600" opacity=".7"/>
+        <circle cx="90" cy="65" r="2" fill="#ff8800" opacity=".65"/>
+        <circle cx="20" cy="100" r="1.5" fill="#ff4400" opacity=".6"/>
+        <!-- angry fire eyes -->
+        <circle cx="61" cy="166" r="3" fill="#ff4400" opacity=".95"/>
+        <circle cx="71" cy="166" r="3" fill="#ff4400" opacity=".95"/>
+        <path d="M58 161 L64 165" stroke="#ff4400" stroke-width="1.8"/>
+        <path d="M74 161 L68 165" stroke="#ff4400" stroke-width="1.8"/>
+        <path d="M59 172 Q66 175 73 172" stroke="#ff2200" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'pine_ghost', name:'Ghost Pine',       cost:220, tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 130 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(72px,11vw,120px)">
+        <path d="M55 214 Q40 204 24 211" stroke="rgba(180,200,255,.4)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M75 214 Q90 204 106 210" stroke="rgba(180,200,255,.4)" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <rect x="55" y="152" width="22" height="65" rx="5" fill="rgba(160,180,240,.35)"/>
+        <!-- ghostly translucent tiers -->
+        <polygon points="65,6 12,82 118,82" fill="rgba(100,130,220,.3)"/>
+        <polygon points="65,6 38,60 92,60" fill="rgba(140,170,255,.25)" opacity=".6"/>
+        <polygon points="65,28 8,108 122,108" fill="rgba(110,140,230,.32)"/>
+        <polygon points="65,28 38,85 92,85" fill="rgba(160,190,255,.22)" opacity=".55"/>
+        <polygon points="65,52 4,136 126,136" fill="rgba(100,130,210,.35)"/>
+        <polygon points="65,52 36,112 94,112" fill="rgba(150,180,255,.22)" opacity=".5"/>
+        <polygon points="65,78 2,158 128,158" fill="rgba(110,140,220,.38)"/>
+        <!-- spirit orbs -->
+        <circle cx="30" cy="60" r="5" fill="rgba(200,220,255,.8)"/>
+        <circle cx="30" cy="60" r="2.5" fill="white"/>
+        <circle cx="100" cy="75" r="4" fill="rgba(200,220,255,.75)"/>
+        <circle cx="100" cy="75" r="2" fill="white"/>
+        <circle cx="65" cy="10" r="5" fill="rgba(220,230,255,.85)"/>
+        <circle cx="65" cy="10" r="2.5" fill="white"/>
+        <!-- haunted eyes -->
+        <circle cx="61" cy="166" r="3" fill="rgba(180,200,255,.95)"/>
+        <circle cx="71" cy="166" r="3" fill="rgba(180,200,255,.95)"/>
+        <circle cx="61" cy="166" r="1.2" fill="white"/>
+        <circle cx="71" cy="166" r="1.2" fill="white"/>
+        <path d="M59 172 Q66 175 73 172" stroke="rgba(180,200,255,.8)" stroke-width="1.6" fill="none"/>
+      </svg>`},
   ],
   willow:[
-    {id:'willow_base',  name:'Classic Willow',cost:0,  tag:'BASE', hue:null},
-    {id:'willow_moon',  name:'Moonlit Willow', cost:80, tag:'',    hue:'hue-rotate(60deg) brightness(1.3) saturate(0.8)'},
-    {id:'willow_crimson',name:'Crimson Willow',cost:150,tag:'',    hue:'hue-rotate(-80deg) saturate(1.8) brightness(0.9)'},
-    {id:'willow_void',  name:'Void Willow',    cost:220,tag:'RARE', hue:'invert(0.85) hue-rotate(240deg) saturate(1.5)'},
+    {id:'willow_base',    name:'Classic Willow', cost:0,   tag:'BASE', svgFn:null},
+    {id:'willow_moon',    name:'Moonlit Willow',  cost:80,  tag:'',
+      svgFn:()=>`<svg viewBox="0 0 170 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(95px,14vw,155px)">
+        <path d="M78 208 Q60 198 40 206" stroke="#3a5060" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M92 208 Q110 198 128 205" stroke="#3a5060" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M85 208 Q82 178 80 148 Q78 118 82 100" stroke="#4a6070" stroke-width="16" fill="none" stroke-linecap="round"/>
+        <ellipse cx="82" cy="62" rx="56" ry="42" fill="#0a1a28"/>
+        <ellipse cx="60" cy="52" rx="36" ry="28" fill="#0e2238"/>
+        <ellipse cx="106" cy="56" rx="34" ry="26" fill="#0a1e30"/>
+        <ellipse cx="82" cy="38" rx="44" ry="32" fill="#1a3a5a"/>
+        <ellipse cx="65" cy="30" rx="28" ry="22" fill="#3a6a8a"/>
+        <ellipse cx="100" cy="32" rx="26" ry="20" fill="#2a5a7a"/>
+        <ellipse cx="82" cy="16" rx="32" ry="22" fill="#5a8aaa"/>
+        <ellipse cx="82" cy="8" rx="18" ry="12" fill="#8abbc8" opacity=".7"/>
+        <!-- moonlit silver tendrils -->
+        <path d="M82 98 Q42 118 28 162" stroke="#aaccdd" stroke-width="3" fill="none" opacity=".75"/>
+        <path d="M82 98 Q58 112 52 154" stroke="#88aacc" stroke-width="2" fill="none" opacity=".65"/>
+        <path d="M82 98 Q128 116 142 160" stroke="#aaccdd" stroke-width="3" fill="none" opacity=".75"/>
+        <path d="M82 95 Q82 125 82 168" stroke="#bbddee" stroke-width="2" fill="none" opacity=".7"/>
+        <!-- star sparkles on crown -->
+        <circle cx="55" cy="28" r="2" fill="white" opacity=".8"/>
+        <circle cx="100" cy="22" r="1.5" fill="white" opacity=".75"/>
+        <circle cx="82" cy="10" r="2.5" fill="white" opacity=".85"/>
+        <!-- silver eyes -->
+        <circle cx="77" cy="156" r="3" fill="#aaddff" opacity=".95"/>
+        <circle cx="87" cy="156" r="3" fill="#aaddff" opacity=".95"/>
+        <path d="M75 162 Q82 166 89 162" stroke="#88ccff" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'willow_crimson', name:'Crimson Willow',  cost:150, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 170 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(95px,14vw,155px)">
+        <path d="M78 208 Q60 198 40 206" stroke="#4a0808" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M92 208 Q110 198 128 205" stroke="#4a0808" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M85 208 Q82 178 80 148 Q78 118 82 100" stroke="#5c1818" stroke-width="16" fill="none" stroke-linecap="round"/>
+        <ellipse cx="82" cy="62" rx="56" ry="42" fill="#1a0005"/>
+        <ellipse cx="60" cy="52" rx="36" ry="28" fill="#280008"/>
+        <ellipse cx="106" cy="56" rx="34" ry="26" fill="#200006"/>
+        <ellipse cx="82" cy="38" rx="44" ry="32" fill="#4a0010"/>
+        <ellipse cx="65" cy="30" rx="28" ry="22" fill="#8a0020"/>
+        <ellipse cx="100" cy="32" rx="26" ry="20" fill="#780018"/>
+        <ellipse cx="82" cy="16" rx="32" ry="22" fill="#aa1830"/>
+        <ellipse cx="82" cy="8" rx="18" ry="12" fill="#cc2040" opacity=".85"/>
+        <!-- blood red tendrils -->
+        <path d="M82 98 Q42 118 28 162" stroke="#cc2030" stroke-width="3.5" fill="none" opacity=".85"/>
+        <path d="M82 98 Q58 112 52 154" stroke="#aa1828" stroke-width="2.5" fill="none" opacity=".75"/>
+        <path d="M82 98 Q128 116 142 160" stroke="#cc2030" stroke-width="3.5" fill="none" opacity=".85"/>
+        <path d="M82 95 Q82 125 82 168" stroke="#dd3040" stroke-width="2.5" fill="none" opacity=".8"/>
+        <!-- drip tips -->
+        <circle cx="28" cy="164" r="4" fill="#cc2030" opacity=".8"/>
+        <circle cx="142" cy="162" r="4" fill="#cc2030" opacity=".8"/>
+        <!-- menacing eyes -->
+        <circle cx="77" cy="156" r="3.5" fill="#ff0022" opacity=".95"/>
+        <circle cx="87" cy="156" r="3.5" fill="#ff0022" opacity=".95"/>
+        <path d="M74 151 L80 155" stroke="#ff0022" stroke-width="1.5"/>
+        <path d="M90 151 L84 155" stroke="#ff0022" stroke-width="1.5"/>
+        <path d="M75 163 Q82 160 89 163" stroke="#cc0018" stroke-width="2" fill="none"/>
+      </svg>`},
+    {id:'willow_void',    name:'Void Willow',     cost:220, tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 170 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(95px,14vw,155px)">
+        <path d="M78 208 Q60 198 40 206" stroke="#080010" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M92 208 Q110 198 128 205" stroke="#080010" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M85 208 Q82 178 80 148 Q78 118 82 100" stroke="#100020" stroke-width="16" fill="none" stroke-linecap="round"/>
+        <ellipse cx="82" cy="62" rx="56" ry="42" fill="#050008"/>
+        <ellipse cx="60" cy="52" rx="36" ry="28" fill="#080012"/>
+        <ellipse cx="106" cy="56" rx="34" ry="26" fill="#06000e"/>
+        <ellipse cx="82" cy="38" rx="44" ry="32" fill="#0e0020"/>
+        <ellipse cx="65" cy="30" rx="28" ry="22" fill="#1a0040"/>
+        <ellipse cx="100" cy="32" rx="26" ry="20" fill="#150035"/>
+        <ellipse cx="82" cy="16" rx="32" ry="22" fill="#220055"/>
+        <ellipse cx="82" cy="8" rx="18" ry="12" fill="#2e0070" opacity=".9"/>
+        <!-- void tendrils with glow -->
+        <path d="M82 98 Q42 118 28 162" stroke="#8800ff" stroke-width="3" fill="none" opacity=".7"/>
+        <path d="M82 98 Q58 112 52 154" stroke="#6600cc" stroke-width="2" fill="none" opacity=".6"/>
+        <path d="M82 98 Q128 116 142 160" stroke="#8800ff" stroke-width="3" fill="none" opacity=".7"/>
+        <path d="M82 95 Q82 125 82 168" stroke="#aa22ff" stroke-width="2.5" fill="none" opacity=".65"/>
+        <!-- void portal eyes -->
+        <circle cx="77" cy="156" r="5" fill="#6600ff" opacity=".95"/>
+        <circle cx="87" cy="156" r="5" fill="#6600ff" opacity=".95"/>
+        <circle cx="77" cy="156" r="2.5" fill="white"/>
+        <circle cx="87" cy="156" r="2.5" fill="white"/>
+        <circle cx="77" cy="156" r="1" fill="#000010"/>
+        <circle cx="87" cy="156" r="1" fill="#000010"/>
+        <path d="M74 163 Q82 167 90 163" stroke="#8800ff" stroke-width="2" fill="none"/>
+      </svg>`},
   ],
   cherry:[
-    {id:'cherry_base',  name:'Classic Cherry',cost:0,  tag:'BASE', hue:null},
-    {id:'cherry_blue',  name:'Blue Cherry',   cost:80, tag:'',     hue:'hue-rotate(200deg) saturate(1.5)'},
-    {id:'cherry_gold',  name:'Gold Cherry',   cost:150,tag:'',     hue:'sepia(1) saturate(2) hue-rotate(10deg) brightness(1.2)'},
-    {id:'cherry_night', name:'Night Cherry',  cost:220,tag:'RARE', hue:'brightness(0.35) saturate(0.5) hue-rotate(280deg)'},
+    {id:'cherry_base',    name:'Classic Cherry',  cost:0,  tag:'BASE', svgFn:null},
+    {id:'cherry_blue',    name:'Ice Cherry',       cost:80, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 165 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(92px,14vw,148px)">
+        <path d="M75 208 Q58 198 38 205" stroke="#2a4a6a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M90 208 Q108 198 126 204" stroke="#2a4a6a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <rect x="67" y="128" width="28" height="82" rx="7" fill="#3a5a7a"/>
+        <path d="M72 142 Q48 126 24 110" stroke="#2a3a5a" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M93 134 Q118 118 140 102" stroke="#2a3a5a" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <ellipse cx="82" cy="70" rx="62" ry="48" fill="#0a1a3a"/>
+        <ellipse cx="56" cy="60" rx="42" ry="34" fill="#0e2248"/>
+        <ellipse cx="110" cy="62" rx="38" ry="30" fill="#0a1e40"/>
+        <ellipse cx="82" cy="42" rx="50" ry="38" fill="#1a3a6a"/>
+        <ellipse cx="60" cy="32" rx="34" ry="26" fill="#4a7aaa"/>
+        <ellipse cx="106" cy="35" rx="32" ry="24" fill="#3a6a9a"/>
+        <ellipse cx="82" cy="18" rx="38" ry="26" fill="#6a9acc"/>
+        <ellipse cx="66" cy="12" rx="22" ry="16" fill="#88bbdd" opacity=".85"/>
+        <!-- ice blossoms -->
+        <circle cx="30" cy="96" r="7" fill="#aaddff"/><circle cx="30" cy="96" r="3.5" fill="white"/>
+        <circle cx="152" cy="88" r="7" fill="#aaddff"/><circle cx="152" cy="88" r="3.5" fill="white"/>
+        <!-- snow on crown -->
+        <ellipse cx="82" cy="14" rx="20" ry="6" fill="white" opacity=".6"/>
+        <!-- frost eyes -->
+        <circle cx="77" cy="165" r="3" fill="#00ccff" opacity=".95"/>
+        <circle cx="87" cy="165" r="3" fill="#00ccff" opacity=".95"/>
+        <path d="M75 171 Q82 168 89 171" stroke="#00aaee" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'cherry_gold',    name:'Gold Cherry',      cost:150,tag:'',
+      svgFn:()=>`<svg viewBox="0 0 165 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(92px,14vw,148px)">
+        <path d="M75 208 Q58 198 38 205" stroke="#5a3000" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M90 208 Q108 198 126 204" stroke="#5a3000" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <rect x="67" y="128" width="28" height="82" rx="7" fill="#7a4010"/>
+        <path d="M72 142 Q48 126 24 110" stroke="#5a2800" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M93 134 Q118 118 140 102" stroke="#5a2800" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <ellipse cx="82" cy="70" rx="62" ry="48" fill="#3a1a00"/>
+        <ellipse cx="56" cy="60" rx="42" ry="34" fill="#5a2a00"/>
+        <ellipse cx="110" cy="62" rx="38" ry="30" fill="#4a2000"/>
+        <ellipse cx="82" cy="42" rx="50" ry="38" fill="#8a4410"/>
+        <ellipse cx="60" cy="32" rx="34" ry="26" fill="#cc8820"/>
+        <ellipse cx="106" cy="35" rx="32" ry="24" fill="#bb7010"/>
+        <ellipse cx="82" cy="18" rx="38" ry="26" fill="#e8a030"/>
+        <ellipse cx="66" cy="12" rx="22" ry="16" fill="#f8c040" opacity=".9"/>
+        <!-- gold blossoms -->
+        <circle cx="30" cy="96" r="7" fill="#ffcc44"/><circle cx="30" cy="96" r="3.5" fill="#ffe080"/>
+        <circle cx="16" cy="82" r="5" fill="#ffaa22"/><circle cx="16" cy="82" r="2.5" fill="#ffdd60"/>
+        <circle cx="152" cy="88" r="7" fill="#ffcc44"/><circle cx="152" cy="88" r="3.5" fill="#ffe080"/>
+        <!-- regal gold eyes -->
+        <circle cx="77" cy="165" r="3" fill="#ffaa00" opacity=".95"/>
+        <circle cx="87" cy="165" r="3" fill="#ffaa00" opacity=".95"/>
+        <path d="M74 160 L80 164" stroke="#ffaa00" stroke-width="1.5"/>
+        <path d="M90 160 L84 164" stroke="#ffaa00" stroke-width="1.5"/>
+        <path d="M75 171 Q82 168 89 171" stroke="#ff8800" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'cherry_night',   name:'Dark Cherry',      cost:220,tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 165 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(92px,14vw,148px)">
+        <path d="M75 208 Q58 198 38 205" stroke="#0a0015" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M90 208 Q108 198 126 204" stroke="#0a0015" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <rect x="67" y="128" width="28" height="82" rx="7" fill="#120020"/>
+        <path d="M72 142 Q48 126 24 110" stroke="#080015" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M93 134 Q118 118 140 102" stroke="#080015" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <ellipse cx="82" cy="70" rx="62" ry="48" fill="#05000c"/>
+        <ellipse cx="56" cy="60" rx="42" ry="34" fill="#08001a"/>
+        <ellipse cx="110" cy="62" rx="38" ry="30" fill="#060014"/>
+        <ellipse cx="82" cy="42" rx="50" ry="38" fill="#10002a"/>
+        <ellipse cx="60" cy="32" rx="34" ry="26" fill="#1e0048"/>
+        <ellipse cx="106" cy="35" rx="32" ry="24" fill="#18003a"/>
+        <ellipse cx="82" cy="18" rx="38" ry="26" fill="#2a005a"/>
+        <ellipse cx="66" cy="12" rx="22" ry="16" fill="#38006a" opacity=".9"/>
+        <!-- dark blossoms with purple glow -->
+        <circle cx="30" cy="96" r="7" fill="#440088"/><circle cx="30" cy="96" r="3.5" fill="#8800cc"/>
+        <circle cx="152" cy="88" r="7" fill="#440088"/><circle cx="152" cy="88" r="3.5" fill="#8800cc"/>
+        <!-- creepy eyes -->
+        <circle cx="77" cy="165" r="4" fill="#cc00ff" opacity=".95"/>
+        <circle cx="87" cy="165" r="4" fill="#cc00ff" opacity=".95"/>
+        <circle cx="77" cy="165" r="1.5" fill="black"/>
+        <circle cx="87" cy="165" r="1.5" fill="black"/>
+        <path d="M74 171 Q82 174 90 171" stroke="#aa00ee" stroke-width="2" fill="none"/>
+      </svg>`},
   ],
   dead:[
-    {id:'dead_base',   name:'Ashen Dead',    cost:0,   tag:'BASE', hue:null},
-    {id:'dead_bone',   name:'Bone White',    cost:80,  tag:'',     hue:'brightness(1.8) saturate(0.15)'},
-    {id:'dead_lava',   name:'Lava Dead',     cost:150, tag:'',     hue:'hue-rotate(100deg) saturate(2.2) brightness(0.85)'},
-    {id:'dead_cursed', name:'Cursed Dead',   cost:220, tag:'RARE', hue:'hue-rotate(280deg) saturate(2) brightness(0.7)'},
+    {id:'dead_base',   name:'Ashen Dead',       cost:0,  tag:'BASE', svgFn:null},
+    {id:'dead_bone',   name:'Bone White',        cost:80, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 155 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(87px,13vw,143px)">
+        <path d="M68 210 Q52 200 32 207" stroke="#ccbbaa" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M87 210 Q102 200 120 207" stroke="#ccbbaa" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="60" y="118" width="30" height="95" rx="6" fill="#ddd0bb"/>
+        <path d="M65 132 Q38 118 16 104" stroke="#ccbbaa" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M16 104 Q4 94 2 80" stroke="#bbaa99" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M85 124 Q110 108 132 94" stroke="#ccbbaa" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M132 94 Q146 84 150 70" stroke="#bbaa99" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M75 118 Q74 96 72 76 Q70 58 72 42" stroke="#ccbbaa" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <!-- bone cracks -->
+        <path d="M64 132 Q72 140 68 155" stroke="#aaa090" stroke-width="2" fill="none" opacity=".6"/>
+        <path d="M78 140 Q72 152 76 168" stroke="#aaa090" stroke-width="1.5" fill="none" opacity=".5"/>
+        <!-- skull hollow + eyes -->
+        <ellipse cx="75" cy="150" rx="10" ry="12" fill="#f0e8d8"/>
+        <circle cx="70" cy="146" r="3.5" fill="black"/>
+        <circle cx="80" cy="146" r="3.5" fill="black"/>
+        <!-- skull grin -->
+        <path d="M67 153 L70 156 L73 153 L76 156 L79 153 L82 156 L85 153" stroke="#888" stroke-width="1.5" fill="none"/>
+      </svg>`},
+    {id:'dead_lava',   name:'Lava Dead',         cost:150,tag:'',
+      svgFn:()=>`<svg viewBox="0 0 155 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(87px,13vw,143px)">
+        <path d="M68 210 Q52 200 32 207" stroke="#3a0800" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M87 210 Q102 200 120 207" stroke="#3a0800" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="60" y="118" width="30" height="95" rx="6" fill="#4a1000"/>
+        <path d="M65 132 Q38 118 16 104" stroke="#3a0800" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M85 124 Q110 108 132 94" stroke="#3a0800" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M75 118 Q74 96 72 76 Q70 58 72 42" stroke="#3a0800" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <!-- lava cracks in trunk -->
+        <path d="M64 132 Q72 140 68 155" stroke="#ff4400" stroke-width="2.5" fill="none" opacity=".85"/>
+        <path d="M78 140 Q72 152 76 168" stroke="#ff6600" stroke-width="2" fill="none" opacity=".8"/>
+        <path d="M62 148 L89 155" stroke="#ff4400" stroke-width="1.5" opacity=".6"/>
+        <!-- glowing lava eyes -->
+        <ellipse cx="75" cy="150" rx="10" ry="12" fill="#110a04"/>
+        <circle cx="70" cy="146" r="3.5" fill="#ff4400" opacity=".95"/>
+        <circle cx="80" cy="146" r="3.5" fill="#ff4400" opacity=".95"/>
+        <circle cx="70" cy="146" r="1.5" fill="#ffaa00"/>
+        <circle cx="80" cy="146" r="1.5" fill="#ffaa00"/>
+        <path d="M68 153 Q75 150 82 153" stroke="#ff2200" stroke-width="2" fill="none"/>
+      </svg>`},
+    {id:'dead_cursed', name:'Cursed Dead',       cost:220,tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 155 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(87px,13vw,143px)">
+        <path d="M68 210 Q52 200 32 207" stroke="#050012" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M87 210 Q102 200 120 207" stroke="#050012" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="60" y="118" width="30" height="95" rx="6" fill="#0a0020"/>
+        <path d="M65 132 Q38 118 16 104" stroke="#080018" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M85 124 Q110 108 132 94" stroke="#080018" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M75 118 Q74 96 72 76 Q70 58 72 42" stroke="#080018" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <!-- cursed purple cracks -->
+        <path d="M64 132 Q72 140 68 155" stroke="#8800ff" stroke-width="2.5" fill="none" opacity=".9"/>
+        <path d="M78 140 Q72 152 76 168" stroke="#aa22ff" stroke-width="2" fill="none" opacity=".85"/>
+        <!-- curse rune markings -->
+        <text x="62" y="180" font-size="8" fill="#6600cc" opacity=".7" font-family="serif">✦</text>
+        <text x="74" y="192" font-size="7" fill="#8800ff" opacity=".65" font-family="serif">✦</text>
+        <!-- cursed glowing eyes -->
+        <ellipse cx="75" cy="150" rx="10" ry="12" fill="#050010"/>
+        <circle cx="70" cy="146" r="4" fill="#9900ff" opacity=".95"/>
+        <circle cx="80" cy="146" r="4" fill="#9900ff" opacity=".95"/>
+        <circle cx="70" cy="146" r="1.8" fill="#dd88ff"/>
+        <circle cx="80" cy="146" r="1.8" fill="#dd88ff"/>
+        <path d="M67 154 Q75 151 83 154" stroke="#7700ee" stroke-width="2.2" fill="none"/>
+      </svg>`},
   ],
   palm:[
-    {id:'palm_base',   name:'Classic Palm',  cost:0,   tag:'BASE', hue:null},
-    {id:'palm_sunset', name:'Sunset Palm',   cost:80,  tag:'',     hue:'hue-rotate(150deg) saturate(1.6) brightness(0.95)'},
-    {id:'palm_ice',    name:'Ice Palm',      cost:150, tag:'',     hue:'hue-rotate(200deg) saturate(0.8) brightness(1.4)'},
-    {id:'palm_night',  name:'Night Palm',    cost:220, tag:'RARE', hue:'brightness(0.4) saturate(0.6) hue-rotate(270deg)'},
+    {id:'palm_base',   name:'Classic Palm',     cost:0,  tag:'BASE', svgFn:null},
+    {id:'palm_sunset', name:'Sunset Palm',       cost:80, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 165 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(92px,13vw,148px)">
+        <path d="M76 214 Q60 204 42 211" stroke="#6a2a00" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M88 214 Q104 204 120 210" stroke="#6a2a00" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M82 72 Q70 112 74 155 Q78 185 80 215" stroke="#8a4020" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <!-- sunset fronds — orange/red/pink -->
+        <path d="M82 70 Q42 44 8 56" stroke="#ee6620" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q52 16 62 -8" stroke="#ee5510" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q112 44 148 56" stroke="#ff8830" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q118 32 140 20" stroke="#ff6622" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q44 32 24 18" stroke="#ee5518" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q92 20 108 4" stroke="#dd4410" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <!-- sunset coconuts -->
+        <circle cx="78" cy="80" r="8" fill="#cc4400"/>
+        <circle cx="88" cy="76" r="7" fill="#bb3800"/>
+        <!-- warm eyes -->
+        <circle cx="76" cy="165" r="2.5" fill="#ff6600" opacity=".95"/>
+        <circle cx="86" cy="165" r="2.5" fill="#ff6600" opacity=".95"/>
+        <path d="M74 171 Q81 168 88 171" stroke="#ff4400" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'palm_ice',    name:'Ice Palm',          cost:150,tag:'',
+      svgFn:()=>`<svg viewBox="0 0 165 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(92px,13vw,148px)">
+        <path d="M76 214 Q60 204 42 211" stroke="#4a6a8a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M88 214 Q104 204 120 210" stroke="#4a6a8a" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M82 72 Q70 112 74 155 Q78 185 80 215" stroke="#6a8aaa" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <!-- ice fronds — pale blue -->
+        <path d="M82 70 Q42 44 8 56" stroke="#88ccee" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q52 16 62 -8" stroke="#88bbdd" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q112 44 148 56" stroke="#99ddff" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q118 32 140 20" stroke="#88ccee" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q44 32 24 18" stroke="#77bbdd" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- frost coconuts -->
+        <circle cx="78" cy="80" r="8" fill="#aaccdd"/>
+        <circle cx="88" cy="76" r="7" fill="#99bbcc"/>
+        <!-- snow on frond tips -->
+        <circle cx="8" cy="56" r="5" fill="white" opacity=".7"/>
+        <circle cx="62" cy="-8" r="4" fill="white" opacity=".65"/>
+        <circle cx="148" cy="56" r="5" fill="white" opacity=".7"/>
+        <!-- icy eyes -->
+        <circle cx="76" cy="165" r="2.5" fill="#00eeff" opacity=".95"/>
+        <circle cx="86" cy="165" r="2.5" fill="#00eeff" opacity=".95"/>
+        <path d="M74 171 Q81 168 88 171" stroke="#00ccee" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'palm_night',  name:'Night Palm',        cost:220,tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 165 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(92px,13vw,148px)">
+        <path d="M76 214 Q60 204 42 211" stroke="#05000e" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M88 214 Q104 204 120 210" stroke="#05000e" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M82 72 Q70 112 74 155 Q78 185 80 215" stroke="#0a0020" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <!-- night fronds — deep purple/black -->
+        <path d="M82 70 Q42 44 8 56" stroke="#220044" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q52 16 62 -8" stroke="#1a0038" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q112 44 148 56" stroke="#280050" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q118 32 140 20" stroke="#1e0040" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M82 70 Q44 32 24 18" stroke="#180035" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- star-like sparkles on frond tips -->
+        <circle cx="8" cy="56" r="2.5" fill="#aa66ff" opacity=".9"/>
+        <circle cx="148" cy="56" r="2.5" fill="#aa66ff" opacity=".9"/>
+        <circle cx="62" cy="-6" r="2" fill="#cc88ff" opacity=".85"/>
+        <circle cx="140" cy="20" r="2" fill="#aa66ff" opacity=".8"/>
+        <!-- void coconuts -->
+        <circle cx="78" cy="80" r="8" fill="#180030"/>
+        <circle cx="88" cy="76" r="7" fill="#120025"/>
+        <!-- void eyes -->
+        <circle cx="76" cy="165" r="3" fill="#9900ff" opacity=".95"/>
+        <circle cx="86" cy="165" r="3" fill="#9900ff" opacity=".95"/>
+        <circle cx="76" cy="165" r="1.2" fill="white"/>
+        <circle cx="86" cy="165" r="1.2" fill="white"/>
+        <path d="M73 171 Q81 174 89 171" stroke="#8800ee" stroke-width="2" fill="none"/>
+      </svg>`},
   ],
   bonsai:[
-    {id:'bonsai_base',   name:'Iron Bonsai',   cost:0,  tag:'BASE', hue:null},
-    {id:'bonsai_autumn', name:'Autumn Bonsai',  cost:80, tag:'',    hue:'hue-rotate(-40deg) saturate(1.8) brightness(0.95)'},
-    {id:'bonsai_jade',   name:'Jade Bonsai',    cost:150,tag:'',    hue:'hue-rotate(80deg) saturate(1.3) brightness(1.1)'},
-    {id:'bonsai_obsidian',name:'Obsidian Bonsai',cost:220,tag:'RARE',hue:'brightness(0.3) saturate(0.4) hue-rotate(250deg)'},
+    {id:'bonsai_base',    name:'Iron Bonsai',    cost:0,  tag:'BASE', svgFn:null},
+    {id:'bonsai_autumn',  name:'Autumn Bonsai',  cost:80, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 145 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(80px,12vw,132px)">
+        <rect x="44" y="180" width="56" height="30" rx="6" fill="#6a3010"/>
+        <rect x="40" y="175" width="64" height="12" rx="4" fill="#8a4020"/>
+        <ellipse cx="72" cy="177" rx="28" ry="6" fill="#2a1005"/>
+        <path d="M72 174 Q66 150 62 128 Q58 106 64 86 Q70 66 72 48" stroke="#5a2a10" stroke-width="12" fill="none" stroke-linecap="round"/>
+        <path d="M64 118 Q38 102 18 90" stroke="#5a2a10" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M68 100 Q96 86 118 74" stroke="#5a2a10" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M70 64 Q70 46 70 32" stroke="#4a2208" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- autumn foliage pads — orange/red/yellow -->
+        <ellipse cx="10" cy="66" rx="20" ry="15" fill="#6a1a00"/>
+        <ellipse cx="4" cy="60" rx="14" ry="10" fill="#aa3300"/>
+        <ellipse cx="20" cy="58" rx="16" ry="12" fill="#cc5500"/>
+        <ellipse cx="12" cy="52" rx="12" ry="9" fill="#ee8800" opacity=".9"/>
+        <ellipse cx="126" cy="58" rx="18" ry="13" fill="#7a1800"/>
+        <ellipse cx="118" cy="52" rx="13" ry="10" fill="#bb3300"/>
+        <ellipse cx="132" cy="52" rx="14" ry="10" fill="#dd5500"/>
+        <ellipse cx="124" cy="46" rx="10" ry="8" fill="#ffaa00" opacity=".9"/>
+        <ellipse cx="70" cy="24" rx="22" ry="16" fill="#881a00"/>
+        <ellipse cx="60" cy="18" rx="16" ry="12" fill="#cc4400"/>
+        <ellipse cx="82" cy="16" rx="16" ry="12" fill="#ee7700"/>
+        <ellipse cx="70" cy="10" rx="14" ry="10" fill="#ffbb00" opacity=".9"/>
+        <!-- autumn accents -->
+        <circle cx="12" cy="56" r="3" fill="#ffcc00" opacity=".65"/>
+        <circle cx="124" cy="50" r="3" fill="#ffcc00" opacity=".65"/>
+        <!-- warm eyes -->
+        <circle cx="66" cy="192" r="2.2" fill="#ff6600" opacity=".95"/>
+        <circle cx="78" cy="192" r="2.2" fill="#ff6600" opacity=".95"/>
+        <path d="M64 197 Q72 194 80 197" stroke="#ff4400" stroke-width="1.6" fill="none"/>
+      </svg>`},
+    {id:'bonsai_jade',    name:'Jade Bonsai',    cost:150,tag:'',
+      svgFn:()=>`<svg viewBox="0 0 145 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(80px,12vw,132px)">
+        <rect x="44" y="180" width="56" height="30" rx="6" fill="#1a4a3a"/>
+        <rect x="40" y="175" width="64" height="12" rx="4" fill="#2a6050"/>
+        <ellipse cx="72" cy="177" rx="28" ry="6" fill="#0a2015"/>
+        <path d="M72 174 Q66 150 62 128 Q58 106 64 86 Q70 66 72 48" stroke="#1a5a3a" stroke-width="12" fill="none" stroke-linecap="round"/>
+        <path d="M64 118 Q38 102 18 90" stroke="#1a5a3a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M68 100 Q96 86 118 74" stroke="#1a5a3a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M70 64 Q70 46 70 32" stroke="#1a4a30" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- jade foliage — turquoise green -->
+        <ellipse cx="10" cy="66" rx="20" ry="15" fill="#0a3a28"/>
+        <ellipse cx="4" cy="60" rx="14" ry="10" fill="#1a6a48"/>
+        <ellipse cx="20" cy="58" rx="16" ry="12" fill="#2a8a60"/>
+        <ellipse cx="12" cy="52" rx="12" ry="9" fill="#44aa7a" opacity=".9"/>
+        <ellipse cx="126" cy="58" rx="18" ry="13" fill="#0a3a28"/>
+        <ellipse cx="118" cy="52" rx="13" ry="10" fill="#1a6a48"/>
+        <ellipse cx="132" cy="52" rx="14" ry="10" fill="#2a8a60"/>
+        <ellipse cx="124" cy="46" rx="10" ry="8" fill="#44aa7a" opacity=".9"/>
+        <ellipse cx="70" cy="24" rx="22" ry="16" fill="#0e4a32"/>
+        <ellipse cx="60" cy="18" rx="16" ry="12" fill="#1e7a50"/>
+        <ellipse cx="82" cy="16" rx="16" ry="12" fill="#2a8a60"/>
+        <ellipse cx="70" cy="10" rx="14" ry="10" fill="#44bb80" opacity=".9"/>
+        <!-- jade gems -->
+        <circle cx="12" cy="56" r="3.5" fill="#88ffcc" opacity=".8"/>
+        <circle cx="124" cy="50" r="3.5" fill="#88ffcc" opacity=".8"/>
+        <circle cx="70" cy="12" r="4" fill="#aaffd8" opacity=".75"/>
+        <!-- jade eyes -->
+        <circle cx="66" cy="192" r="2.2" fill="#00cc88" opacity=".95"/>
+        <circle cx="78" cy="192" r="2.2" fill="#00cc88" opacity=".95"/>
+        <path d="M64 197 Q72 194 80 197" stroke="#00aa66" stroke-width="1.6" fill="none"/>
+      </svg>`},
+    {id:'bonsai_obsidian',name:'Obsidian Bonsai',cost:220,tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 145 215" xmlns="http://www.w3.org/2000/svg" style="width:clamp(80px,12vw,132px)">
+        <rect x="44" y="180" width="56" height="30" rx="6" fill="#0a0010"/>
+        <rect x="40" y="175" width="64" height="12" rx="4" fill="#120018"/>
+        <ellipse cx="72" cy="177" rx="28" ry="6" fill="#050008"/>
+        <path d="M72 174 Q66 150 62 128 Q58 106 64 86 Q70 66 72 48" stroke="#100018" stroke-width="12" fill="none" stroke-linecap="round"/>
+        <path d="M64 118 Q38 102 18 90" stroke="#0a0015" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M68 100 Q96 86 118 74" stroke="#0a0015" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M70 64 Q70 46 70 32" stroke="#0a0012" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- obsidian foliage — near black with purple sheen -->
+        <ellipse cx="10" cy="66" rx="20" ry="15" fill="#080010"/>
+        <ellipse cx="4" cy="60" rx="14" ry="10" fill="#10001e"/>
+        <ellipse cx="20" cy="58" rx="16" ry="12" fill="#180028"/>
+        <ellipse cx="12" cy="52" rx="12" ry="9" fill="#220035" opacity=".9"/>
+        <ellipse cx="126" cy="58" rx="18" ry="13" fill="#080010"/>
+        <ellipse cx="118" cy="52" rx="13" ry="10" fill="#10001e"/>
+        <ellipse cx="132" cy="52" rx="14" ry="10" fill="#180028"/>
+        <ellipse cx="124" cy="46" rx="10" ry="8" fill="#220035" opacity=".9"/>
+        <ellipse cx="70" cy="24" rx="22" ry="16" fill="#0c0018"/>
+        <ellipse cx="60" cy="18" rx="16" ry="12" fill="#160025"/>
+        <ellipse cx="82" cy="16" rx="16" ry="12" fill="#200030"/>
+        <ellipse cx="70" cy="10" rx="14" ry="10" fill="#2a003a" opacity=".9"/>
+        <!-- obsidian sheen highlights -->
+        <circle cx="12" cy="56" r="3" fill="#6600aa" opacity=".5"/>
+        <circle cx="124" cy="50" r="3" fill="#6600aa" opacity=".5"/>
+        <circle cx="70" cy="12" r="3.5" fill="#8800cc" opacity=".45"/>
+        <!-- eerie purple eyes -->
+        <circle cx="66" cy="192" r="2.5" fill="#aa00ff" opacity=".95"/>
+        <circle cx="78" cy="192" r="2.5" fill="#aa00ff" opacity=".95"/>
+        <circle cx="66" cy="192" r="1" fill="white"/>
+        <circle cx="78" cy="192" r="1" fill="white"/>
+        <path d="M63 197 Q72 194 81 197" stroke="#8800ee" stroke-width="1.8" fill="none"/>
+      </svg>`},
   ],
   mangrove:[
-    {id:'mangrove_base',  name:'Swamp Beast',   cost:0,  tag:'BASE', hue:null},
-    {id:'mangrove_ocean', name:'Ocean Beast',    cost:80, tag:'',    hue:'hue-rotate(180deg) saturate(1.2) brightness(1.1)'},
-    {id:'mangrove_fire',  name:'Fire Beast',     cost:150,tag:'',    hue:'hue-rotate(120deg) saturate(2.2) brightness(0.85)'},
-    {id:'mangrove_stone', name:'Stone Beast',    cost:220,tag:'RARE', hue:'saturate(0.15) brightness(0.75) contrast(1.1)'},
+    {id:'mangrove_base',  name:'Swamp Beast',   cost:0,  tag:'BASE', svgFn:null},
+    {id:'mangrove_ocean', name:'Ocean Beast',    cost:80, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 175 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(98px,14vw,158px)">
+        <path d="M88 182 Q62 192 38 202" stroke="#1a4a6a" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 182 Q114 192 138 202" stroke="#1a4a6a" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 182 Q88 202 88 218" stroke="#1a4a6a" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <rect x="78" y="102" width="22" height="84" rx="7" fill="#2a5a7a"/>
+        <path d="M82 145 Q52 132 30 118" stroke="#1e4a6a" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M98 138 Q128 124 148 110" stroke="#1e4a6a" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- ocean canopy -->
+        <ellipse cx="88" cy="68" rx="68" ry="52" fill="#0a1a2a"/>
+        <ellipse cx="60" cy="58" rx="46" ry="36" fill="#0e2238"/>
+        <ellipse cx="118" cy="62" rx="42" ry="34" fill="#0a1e32"/>
+        <ellipse cx="88" cy="40" rx="54" ry="40" fill="#1a3a5a"/>
+        <ellipse cx="64" cy="30" rx="36" ry="28" fill="#2a5a8a"/>
+        <ellipse cx="114" cy="34" rx="34" ry="26" fill="#2060aa"/>
+        <ellipse cx="88" cy="18" rx="42" ry="28" fill="#3a7acc"/>
+        <ellipse cx="88" cy="8" rx="26" ry="16" fill="#5a9add" opacity=".8"/>
+        <!-- ocean bubbles -->
+        <circle cx="50" cy="48" r="4" fill="rgba(100,180,255,.5)"/>
+        <circle cx="125" cy="42" r="3" fill="rgba(100,180,255,.45)"/>
+        <circle cx="88" cy="22" r="5" fill="rgba(150,200,255,.4)"/>
+        <!-- ocean eyes -->
+        <circle cx="83" cy="128" r="3" fill="#00aaff" opacity=".98"/>
+        <circle cx="95" cy="128" r="3" fill="#00aaff" opacity=".98"/>
+        <path d="M80 134 Q89 131 98 134" stroke="#0088ee" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'mangrove_fire',  name:'Fire Beast',     cost:150,tag:'',
+      svgFn:()=>`<svg viewBox="0 0 175 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(98px,14vw,158px)">
+        <path d="M88 182 Q62 192 38 202" stroke="#3a0800" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 182 Q114 192 138 202" stroke="#3a0800" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 182 Q88 202 88 218" stroke="#3a0800" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <rect x="78" y="102" width="22" height="84" rx="7" fill="#4a1000"/>
+        <path d="M82 145 Q52 132 30 118" stroke="#380800" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M98 138 Q128 124 148 110" stroke="#380800" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- fire canopy -->
+        <ellipse cx="88" cy="68" rx="68" ry="52" fill="#1a0200"/>
+        <ellipse cx="60" cy="58" rx="46" ry="36" fill="#280500"/>
+        <ellipse cx="118" cy="62" rx="42" ry="34" fill="#220400"/>
+        <ellipse cx="88" cy="40" rx="54" ry="40" fill="#4a0e00"/>
+        <ellipse cx="64" cy="30" rx="36" ry="28" fill="#882000"/>
+        <ellipse cx="114" cy="34" rx="34" ry="26" fill="#7a1800"/>
+        <ellipse cx="88" cy="18" rx="42" ry="28" fill="#cc3300"/>
+        <ellipse cx="88" cy="8" rx="26" ry="16" fill="#ee5500" opacity=".85"/>
+        <!-- flame tips -->
+        <ellipse cx="60" cy="30" rx="12" ry="18" fill="#ff8800" opacity=".7"/>
+        <ellipse cx="115" cy="32" rx="10" ry="16" fill="#ff6600" opacity=".65"/>
+        <ellipse cx="88" cy="8" rx="8" ry="12" fill="#ffcc00" opacity=".8"/>
+        <!-- fire eyes -->
+        <circle cx="83" cy="128" r="3.5" fill="#ff4400" opacity=".98"/>
+        <circle cx="95" cy="128" r="3.5" fill="#ff4400" opacity=".98"/>
+        <circle cx="83" cy="128" r="1.5" fill="#ffaa00"/>
+        <circle cx="95" cy="128" r="1.5" fill="#ffaa00"/>
+        <path d="M80 134 Q89 131 98 134" stroke="#ff2200" stroke-width="2" fill="none"/>
+      </svg>`},
+    {id:'mangrove_stone', name:'Stone Beast',    cost:220,tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 175 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(98px,14vw,158px)">
+        <path d="M88 182 Q62 192 38 202" stroke="#3a3830" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 182 Q114 192 138 202" stroke="#3a3830" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 182 Q88 202 88 218" stroke="#3a3830" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <rect x="78" y="102" width="22" height="84" rx="7" fill="#5a5848"/>
+        <path d="M82 145 Q52 132 30 118" stroke="#484640" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <path d="M98 138 Q128 124 148 110" stroke="#484640" stroke-width="10" fill="none" stroke-linecap="round"/>
+        <!-- stone canopy -->
+        <ellipse cx="88" cy="68" rx="68" ry="52" fill="#1e1e18"/>
+        <ellipse cx="60" cy="58" rx="46" ry="36" fill="#282820"/>
+        <ellipse cx="118" cy="62" rx="42" ry="34" fill="#222218"/>
+        <ellipse cx="88" cy="40" rx="54" ry="40" fill="#3a3a30"/>
+        <ellipse cx="64" cy="30" rx="36" ry="28" fill="#505048"/>
+        <ellipse cx="114" cy="34" rx="34" ry="26" fill="#484840"/>
+        <ellipse cx="88" cy="18" rx="42" ry="28" fill="#606058"/>
+        <ellipse cx="88" cy="8" rx="26" ry="16" fill="#787868" opacity=".85"/>
+        <!-- stone cracks -->
+        <path d="M55 48 Q65 55 60 70" stroke="#252520" stroke-width="2" fill="none" opacity=".7"/>
+        <path d="M120 44 Q112 52 116 66" stroke="#252520" stroke-width="1.5" fill="none" opacity=".65"/>
+        <!-- stone eyes — glowing red in the dark -->
+        <circle cx="83" cy="128" r="3" fill="#aa2200" opacity=".98"/>
+        <circle cx="95" cy="128" r="3" fill="#aa2200" opacity=".98"/>
+        <path d="M80 134 Q89 132 98 134" stroke="#881800" stroke-width="1.8" fill="none"/>
+      </svg>`},
   ],
   cactus:[
-    {id:'cactus_base',   name:'Desert Cactus',  cost:0,  tag:'BASE', hue:null},
-    {id:'cactus_night',  name:'Night Cactus',   cost:80, tag:'',    hue:'brightness(0.5) saturate(0.5) hue-rotate(260deg)'},
-    {id:'cactus_coral',  name:'Coral Cactus',   cost:150,tag:'',    hue:'hue-rotate(-50deg) saturate(1.6) brightness(1.05)'},
-    {id:'cactus_golden', name:'Golden Cactus',  cost:220,tag:'RARE', hue:'sepia(0.9) saturate(1.8) hue-rotate(20deg) brightness(1.2)'},
+    {id:'cactus_base',   name:'Desert Cactus',  cost:0,  tag:'BASE', svgFn:null},
+    {id:'cactus_night',  name:'Night Cactus',   cost:80, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 155 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(87px,13vw,142px)">
+        <ellipse cx="77" cy="213" rx="36" ry="8" fill="#1a1030" opacity=".5"/>
+        <rect x="58" y="85" width="38" height="130" rx="19" fill="#1a1040"/>
+        <rect x="64" y="85" width="12" height="130" rx="6" fill="#2a1860" opacity=".3"/>
+        <path d="M60 130 Q28 128 24 106" stroke="#1a1040" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M24 106 Q22 88 28 78" stroke="#1a1040" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M96 118 Q128 115 132 92" stroke="#1a1040" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M132 92 Q134 74 128 64" stroke="#1a1040" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <ellipse cx="77" cy="80" rx="22" ry="26" fill="#1a1040"/>
+        <!-- purple spines -->
+        <g stroke="#8844cc" stroke-width="1.5" opacity=".9">
+          <line x1="59" y1="104" x2="44" y2="99"/><line x1="59" y1="112" x2="43" y2="109"/><line x1="59" y1="120" x2="44" y2="118"/>
+          <line x1="95" y1="104" x2="110" y2="99"/><line x1="95" y1="112" x2="111" y2="109"/>
+          <line x1="26" y1="94" x2="14" y2="88"/><line x1="130" y1="82" x2="142" y2="77"/>
+        </g>
+        <!-- night blooms — glowing purple -->
+        <circle cx="77" cy="58" r="10" fill="#440088"/><circle cx="77" cy="58" r="5" fill="#8800ff"/>
+        <circle cx="28" cy="76" r="8" fill="#330077"/><circle cx="28" cy="76" r="4" fill="#7700ee"/>
+        <circle cx="128" cy="62" r="8" fill="#440088"/><circle cx="128" cy="62" r="4" fill="#8800ff"/>
+        <!-- night eyes -->
+        <circle cx="72" cy="175" r="2.5" fill="#aa44ff" opacity=".95"/>
+        <circle cx="82" cy="175" r="2.5" fill="#aa44ff" opacity=".95"/>
+        <path d="M70 181 Q77 178 84 181" stroke="#8822ee" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'cactus_coral',  name:'Coral Cactus',   cost:150,tag:'',
+      svgFn:()=>`<svg viewBox="0 0 155 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(87px,13vw,142px)">
+        <ellipse cx="77" cy="213" rx="36" ry="8" fill="#c09850" opacity=".5"/>
+        <rect x="58" y="85" width="38" height="130" rx="19" fill="#cc5544"/>
+        <rect x="64" y="85" width="12" height="130" rx="6" fill="#ee7766" opacity=".3"/>
+        <path d="M60 130 Q28 128 24 106" stroke="#cc5544" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M24 106 Q22 88 28 78" stroke="#cc5544" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M96 118 Q128 115 132 92" stroke="#cc5544" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M132 92 Q134 74 128 64" stroke="#cc5544" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <ellipse cx="77" cy="80" rx="22" ry="26" fill="#cc5544"/>
+        <!-- coral spines — white/pink -->
+        <g stroke="#ffaacc" stroke-width="1.5" opacity=".9">
+          <line x1="59" y1="104" x2="44" y2="99"/><line x1="59" y1="112" x2="43" y2="109"/>
+          <line x1="95" y1="104" x2="110" y2="99"/><line x1="95" y1="112" x2="111" y2="109"/>
+          <line x1="26" y1="94" x2="14" y2="88"/><line x1="130" y1="82" x2="142" y2="77"/>
+        </g>
+        <!-- coral flowers — pink/white -->
+        <circle cx="77" cy="58" r="10" fill="#ff88aa"/><circle cx="77" cy="58" r="5" fill="#ffddee"/>
+        <circle cx="28" cy="76" r="8" fill="#ff6699"/><circle cx="28" cy="76" r="4" fill="#ffccdd"/>
+        <circle cx="128" cy="62" r="8" fill="#ff88bb"/><circle cx="128" cy="62" r="4" fill="#ffddee"/>
+        <!-- coral eyes -->
+        <circle cx="72" cy="175" r="2.5" fill="#ff4488" opacity=".95"/>
+        <circle cx="82" cy="175" r="2.5" fill="#ff4488" opacity=".95"/>
+        <path d="M70 181 Q77 178 84 181" stroke="#ff2266" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'cactus_golden', name:'Golden Cactus',  cost:220,tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 155 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(87px,13vw,142px)">
+        <ellipse cx="77" cy="213" rx="36" ry="8" fill="#8a6810" opacity=".5"/>
+        <rect x="58" y="85" width="38" height="130" rx="19" fill="#aa8820"/>
+        <rect x="64" y="85" width="12" height="130" rx="6" fill="#ccaa40" opacity=".3"/>
+        <path d="M60 130 Q28 128 24 106" stroke="#aa8820" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M24 106 Q22 88 28 78" stroke="#aa8820" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M96 118 Q128 115 132 92" stroke="#aa8820" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <path d="M132 92 Q134 74 128 64" stroke="#aa8820" stroke-width="20" fill="none" stroke-linecap="round"/>
+        <ellipse cx="77" cy="80" rx="22" ry="26" fill="#aa8820"/>
+        <!-- gold spines -->
+        <g stroke="#ffee44" stroke-width="2" opacity=".9">
+          <line x1="59" y1="104" x2="44" y2="99"/><line x1="59" y1="112" x2="43" y2="109"/>
+          <line x1="95" y1="104" x2="110" y2="99"/><line x1="95" y1="112" x2="111" y2="109"/>
+          <line x1="26" y1="94" x2="14" y2="88"/><line x1="130" y1="82" x2="142" y2="77"/>
+        </g>
+        <!-- golden crown flowers -->
+        <circle cx="77" cy="58" r="12" fill="#cc9900"/><circle cx="77" cy="58" r="6" fill="#ffee44"/>
+        <circle cx="28" cy="76" r="9" fill="#bb8800"/><circle cx="28" cy="76" r="4.5" fill="#ffdd22"/>
+        <circle cx="128" cy="62" r="9" fill="#cc9900"/><circle cx="128" cy="62" r="4.5" fill="#ffee44"/>
+        <!-- kingly eyes -->
+        <circle cx="72" cy="175" r="2.5" fill="#ffaa00" opacity=".95"/>
+        <circle cx="82" cy="175" r="2.5" fill="#ffaa00" opacity=".95"/>
+        <path d="M69 170 L75 174" stroke="#ffaa00" stroke-width="1.5"/>
+        <path d="M85 170 L79 174" stroke="#ffaa00" stroke-width="1.5"/>
+        <path d="M70 181 Q77 178 84 181" stroke="#ff8800" stroke-width="1.8" fill="none"/>
+      </svg>`},
   ],
   ghostwood:[
-    {id:'ghostwood_base',  name:'Spectral Elder', cost:0,  tag:'BASE', hue:null},
-    {id:'ghostwood_ember', name:'Ember Ghost',    cost:80, tag:'',    hue:'hue-rotate(130deg) saturate(1.8) brightness(0.9)'},
-    {id:'ghostwood_ice',   name:'Ice Ghost',      cost:150,tag:'',    hue:'hue-rotate(20deg) saturate(0.7) brightness(1.5)'},
-    {id:'ghostwood_void',  name:'Void Ghost',     cost:220,tag:'RARE', hue:'hue-rotate(300deg) saturate(2.5) brightness(0.6)'},
+    {id:'ghostwood_base',  name:'Spectral Elder',cost:0,  tag:'BASE', svgFn:null},
+    {id:'ghostwood_ember', name:'Ember Ghost',   cost:80, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 162 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(90px,13vw,148px)">
+        <path d="M74 208 Q55 196 32 204" stroke="rgba(255,100,0,.45)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M88 208 Q108 196 128 203" stroke="rgba(255,100,0,.45)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="66" y="124" width="28" height="86" rx="8" fill="rgba(200,60,0,.4)"/>
+        <path d="M70 136 Q44 120 20 106" stroke="rgba(220,80,0,.6)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M92 128 Q118 112 140 98" stroke="rgba(220,80,0,.6)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M80 124 Q80 102 80 82" stroke="rgba(200,60,0,.55)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <!-- ember canopy -->
+        <ellipse cx="81" cy="64" rx="68" ry="52" fill="rgba(80,20,0,.5)"/>
+        <ellipse cx="54" cy="52" rx="44" ry="34" fill="rgba(120,30,0,.45)"/>
+        <ellipse cx="110" cy="56" rx="40" ry="32" fill="rgba(100,25,0,.42)"/>
+        <ellipse cx="81" cy="36" rx="52" ry="38" fill="rgba(180,50,0,.48)"/>
+        <ellipse cx="62" cy="26" rx="32" ry="24" fill="rgba(230,80,0,.5)"/>
+        <ellipse cx="102" cy="28" rx="30" ry="22" fill="rgba(210,70,0,.48)"/>
+        <ellipse cx="81" cy="14" rx="36" ry="24" fill="rgba(255,100,0,.55)"/>
+        <!-- ember orbs -->
+        <circle cx="42" cy="44" r="6" fill="rgba(255,150,0,.85)"/>
+        <circle cx="42" cy="44" r="3" fill="#ffee00"/>
+        <circle cx="122" cy="40" r="5" fill="rgba(255,120,0,.8)"/>
+        <circle cx="122" cy="40" r="2.5" fill="#ffcc00"/>
+        <circle cx="81" cy="18" r="7" fill="rgba(255,160,0,.9)"/>
+        <circle cx="81" cy="18" r="3.5" fill="white"/>
+        <!-- ember eyes -->
+        <circle cx="75" cy="155" r="3.5" fill="#ff6600" opacity=".98"/>
+        <circle cx="87" cy="155" r="3.5" fill="#ff6600" opacity=".98"/>
+        <circle cx="75" cy="155" r="1.5" fill="#ffee00"/>
+        <circle cx="87" cy="155" r="1.5" fill="#ffee00"/>
+        <path d="M73 162 Q81 166 89 162" stroke="rgba(255,100,0,.88)" stroke-width="2" fill="none"/>
+      </svg>`},
+    {id:'ghostwood_ice',   name:'Ice Ghost',     cost:150,tag:'',
+      svgFn:()=>`<svg viewBox="0 0 162 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(90px,13vw,148px)">
+        <path d="M74 208 Q55 196 32 204" stroke="rgba(150,220,255,.45)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M88 208 Q108 196 128 203" stroke="rgba(150,220,255,.45)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="66" y="124" width="28" height="86" rx="8" fill="rgba(180,230,255,.3)"/>
+        <path d="M70 136 Q44 120 20 106" stroke="rgba(160,220,255,.55)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M92 128 Q118 112 140 98" stroke="rgba(160,220,255,.55)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M80 124 Q80 102 80 82" stroke="rgba(160,220,255,.5)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <!-- ice canopy -->
+        <ellipse cx="81" cy="64" rx="68" ry="52" fill="rgba(100,180,255,.25)"/>
+        <ellipse cx="54" cy="52" rx="44" ry="34" fill="rgba(130,200,255,.22)"/>
+        <ellipse cx="110" cy="56" rx="40" ry="32" fill="rgba(120,190,255,.2)"/>
+        <ellipse cx="81" cy="36" rx="52" ry="38" fill="rgba(160,220,255,.28)"/>
+        <ellipse cx="62" cy="26" rx="32" ry="24" fill="rgba(200,235,255,.32)"/>
+        <ellipse cx="102" cy="28" rx="30" ry="22" fill="rgba(180,225,255,.3)"/>
+        <ellipse cx="81" cy="14" rx="36" ry="24" fill="rgba(220,242,255,.38)"/>
+        <!-- ice crystal orbs -->
+        <circle cx="42" cy="44" r="7" fill="rgba(200,240,255,.9)"/>
+        <circle cx="42" cy="44" r="3.5" fill="white"/>
+        <circle cx="122" cy="40" r="6" fill="rgba(200,240,255,.85)"/>
+        <circle cx="122" cy="40" r="3" fill="white"/>
+        <circle cx="81" cy="18" r="8" fill="rgba(220,245,255,.92)"/>
+        <circle cx="81" cy="18" r="4" fill="white"/>
+        <!-- icicle details -->
+        <line x1="36" y1="48" x2="34" y2="58" stroke="rgba(200,240,255,.6)" stroke-width="1.5"/>
+        <line x1="48" y1="48" x2="50" y2="57" stroke="rgba(200,240,255,.6)" stroke-width="1.5"/>
+        <!-- ice eyes -->
+        <circle cx="75" cy="155" r="3.5" fill="rgba(150,220,255,.98)"/>
+        <circle cx="87" cy="155" r="3.5" fill="rgba(150,220,255,.98)"/>
+        <circle cx="75" cy="155" r="1.5" fill="white"/>
+        <circle cx="87" cy="155" r="1.5" fill="white"/>
+        <path d="M73 162 Q81 166 89 162" stroke="rgba(150,220,255,.85)" stroke-width="2" fill="none"/>
+      </svg>`},
+    {id:'ghostwood_void',  name:'Void Ghost',    cost:220,tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 162 220" xmlns="http://www.w3.org/2000/svg" style="width:clamp(90px,13vw,148px)">
+        <path d="M74 208 Q55 196 32 204" stroke="rgba(180,0,255,.45)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M88 208 Q108 196 128 203" stroke="rgba(180,0,255,.45)" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <rect x="66" y="124" width="28" height="86" rx="8" fill="rgba(80,0,160,.4)"/>
+        <path d="M70 136 Q44 120 20 106" stroke="rgba(160,0,255,.6)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M92 128 Q118 112 140 98" stroke="rgba(160,0,255,.6)" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M80 124 Q80 102 80 82" stroke="rgba(140,0,220,.55)" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <!-- void canopy — deep purple -->
+        <ellipse cx="81" cy="64" rx="68" ry="52" fill="rgba(30,0,60,.6)"/>
+        <ellipse cx="54" cy="52" rx="44" ry="34" fill="rgba(50,0,90,.55)"/>
+        <ellipse cx="110" cy="56" rx="40" ry="32" fill="rgba(40,0,75,.52)"/>
+        <ellipse cx="81" cy="36" rx="52" ry="38" fill="rgba(80,0,140,.58)"/>
+        <ellipse cx="62" cy="26" rx="32" ry="24" fill="rgba(120,0,200,.62)"/>
+        <ellipse cx="102" cy="28" rx="30" ry="22" fill="rgba(100,0,180,.58)"/>
+        <ellipse cx="81" cy="14" rx="36" ry="24" fill="rgba(150,0,240,.65)"/>
+        <!-- void rift orbs -->
+        <circle cx="42" cy="44" r="7" fill="rgba(200,0,255,.88)"/>
+        <circle cx="42" cy="44" r="3.5" fill="white"/>
+        <circle cx="42" cy="44" r="1.5" fill="black"/>
+        <circle cx="122" cy="40" r="6" fill="rgba(180,0,230,.85)"/>
+        <circle cx="122" cy="40" r="3" fill="white"/>
+        <circle cx="122" cy="40" r="1.2" fill="black"/>
+        <circle cx="81" cy="18" r="8" fill="rgba(220,0,255,.92)"/>
+        <circle cx="81" cy="18" r="4" fill="white"/>
+        <circle cx="81" cy="18" r="2" fill="black"/>
+        <!-- void eyes — portal-like -->
+        <circle cx="75" cy="155" r="5" fill="#aa00ff" opacity=".98"/>
+        <circle cx="87" cy="155" r="5" fill="#aa00ff" opacity=".98"/>
+        <circle cx="75" cy="155" r="2.5" fill="white"/>
+        <circle cx="87" cy="155" r="2.5" fill="white"/>
+        <circle cx="75" cy="155" r="1" fill="black"/>
+        <circle cx="87" cy="155" r="1" fill="black"/>
+        <path d="M72 163 Q81 167 90 163" stroke="#9900ee" stroke-width="2.2" fill="none"/>
+      </svg>`},
   ],
   redwood:[
-    {id:'redwood_base',   name:'Sky Piercer',    cost:0,  tag:'BASE', hue:null},
-    {id:'redwood_winter', name:'Winter Redwood', cost:80, tag:'',    hue:'saturate(0.2) brightness(1.3) hue-rotate(195deg)'},
-    {id:'redwood_inferno',name:'Inferno Redwood',cost:150,tag:'',    hue:'hue-rotate(110deg) saturate(2.2) brightness(0.85)'},
-    {id:'redwood_onyx',   name:'Onyx Redwood',   cost:220,tag:'RARE', hue:'brightness(0.3) saturate(0.2) hue-rotate(240deg)'},
+    {id:'redwood_base',   name:'Sky Piercer',    cost:0,  tag:'BASE', svgFn:null},
+    {id:'redwood_winter', name:'Winter Redwood', cost:80, tag:'',
+      svgFn:()=>`<svg viewBox="0 0 138 228" xmlns="http://www.w3.org/2000/svg" style="width:clamp(76px,11vw,125px)">
+        <path d="M56 220 Q36 208 16 216" stroke="#5a7a9a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 220 Q100 208 118 216" stroke="#5a7a9a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <rect x="46" y="64" width="46" height="160" rx="10" fill="#6a8aaa"/>
+        <!-- ice bark lines -->
+        <line x1="48" y1="82" x2="90" y2="88" stroke="#3a5a7a" stroke-width="2" opacity=".5"/>
+        <line x1="48" y1="100" x2="90" y2="106" stroke="#3a5a7a" stroke-width="2" opacity=".5"/>
+        <line x1="48" y1="118" x2="90" y2="124" stroke="#3a5a7a" stroke-width="2" opacity=".5"/>
+        <path d="M52 105 Q26 92 6 80" stroke="#4a6a8a" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 96 Q112 82 132 70" stroke="#4a6a8a" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <!-- winter foliage — icy blue-grey -->
+        <ellipse cx="69" cy="46" rx="58" ry="40" fill="#0e2038"/>
+        <ellipse cx="46" cy="36" rx="38" ry="28" fill="#162a48"/>
+        <ellipse cx="94" cy="38" rx="36" ry="26" fill="#122240"/>
+        <ellipse cx="69" cy="24" rx="46" ry="32" fill="#2a4a6a"/>
+        <ellipse cx="50" cy="16" rx="28" ry="22" fill="#4a7a9a"/>
+        <ellipse cx="90" cy="18" rx="26" ry="20" fill="#3a6a8a"/>
+        <ellipse cx="69" cy="8" rx="32" ry="20" fill="#5a8aaa"/>
+        <ellipse cx="69" cy="0" rx="20" ry="12" fill="#7aaabb" opacity=".8"/>
+        <!-- snow caps on foliage -->
+        <ellipse cx="50" cy="14" rx="20" ry="6" fill="white" opacity=".6"/>
+        <ellipse cx="90" cy="16" rx="18" ry="5" fill="white" opacity=".55"/>
+        <ellipse cx="69" cy="6" rx="22" ry="5" fill="white" opacity=".7"/>
+        <!-- icy eyes -->
+        <ellipse cx="69" cy="188" rx="12" ry="14" fill="#0a1828"/>
+        <circle cx="63" cy="184" r="3" fill="#00ddff" opacity=".95"/>
+        <circle cx="75" cy="184" r="3" fill="#00ddff" opacity=".95"/>
+        <path d="M61 191 Q69 188 77 191" stroke="#00bbee" stroke-width="1.8" fill="none"/>
+      </svg>`},
+    {id:'redwood_inferno',name:'Inferno Redwood',cost:150,tag:'',
+      svgFn:()=>`<svg viewBox="0 0 138 228" xmlns="http://www.w3.org/2000/svg" style="width:clamp(76px,11vw,125px)">
+        <path d="M56 220 Q36 208 16 216" stroke="#4a0800" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 220 Q100 208 118 216" stroke="#4a0800" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <rect x="46" y="64" width="46" height="160" rx="10" fill="#5a1000"/>
+        <!-- lava cracks in trunk -->
+        <line x1="48" y1="82" x2="90" y2="88" stroke="#ff4400" stroke-width="2" opacity=".6"/>
+        <line x1="48" y1="100" x2="90" y2="106" stroke="#ff6600" stroke-width="1.5" opacity=".55"/>
+        <line x1="48" y1="118" x2="90" y2="124" stroke="#ff4400" stroke-width="2" opacity=".5"/>
+        <path d="M52 105 Q26 92 6 80" stroke="#480800" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 96 Q112 82 132 70" stroke="#480800" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <!-- inferno foliage -->
+        <ellipse cx="69" cy="46" rx="58" ry="40" fill="#1a0000"/>
+        <ellipse cx="46" cy="36" rx="38" ry="28" fill="#2a0400"/>
+        <ellipse cx="94" cy="38" rx="36" ry="26" fill="#240200"/>
+        <ellipse cx="69" cy="24" rx="46" ry="32" fill="#4a0800"/>
+        <ellipse cx="50" cy="16" rx="28" ry="22" fill="#882000"/>
+        <ellipse cx="90" cy="18" rx="26" ry="20" fill="#7a1800"/>
+        <ellipse cx="69" cy="8" rx="32" ry="20" fill="#cc3300"/>
+        <ellipse cx="69" cy="0" rx="20" ry="12" fill="#ee5500" opacity=".85"/>
+        <!-- flame tips -->
+        <ellipse cx="50" cy="12" rx="10" ry="16" fill="#ff8800" opacity=".7"/>
+        <ellipse cx="90" cy="14" rx="8" ry="14" fill="#ff6600" opacity=".65"/>
+        <ellipse cx="69" cy="4" rx="8" ry="12" fill="#ffcc00" opacity=".8"/>
+        <!-- inferno eyes -->
+        <ellipse cx="69" cy="188" rx="12" ry="14" fill="#0d0200"/>
+        <circle cx="63" cy="184" r="3.5" fill="#ff3300" opacity=".95"/>
+        <circle cx="75" cy="184" r="3.5" fill="#ff3300" opacity=".95"/>
+        <circle cx="63" cy="184" r="1.5" fill="#ffaa00"/>
+        <circle cx="75" cy="184" r="1.5" fill="#ffaa00"/>
+        <path d="M61 191 Q69 188 77 191" stroke="#ff2200" stroke-width="2" fill="none"/>
+      </svg>`},
+    {id:'redwood_onyx',   name:'Onyx Redwood',   cost:220,tag:'RARE',
+      svgFn:()=>`<svg viewBox="0 0 138 228" xmlns="http://www.w3.org/2000/svg" style="width:clamp(76px,11vw,125px)">
+        <path d="M56 220 Q36 208 16 216" stroke="#050008" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M82 220 Q100 208 118 216" stroke="#050008" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <rect x="46" y="64" width="46" height="160" rx="10" fill="#080010"/>
+        <!-- obsidian sheen lines -->
+        <line x1="48" y1="82" x2="90" y2="88" stroke="#2a0050" stroke-width="2" opacity=".6"/>
+        <line x1="48" y1="100" x2="90" y2="106" stroke="#220044" stroke-width="1.5" opacity=".55"/>
+        <path d="M52 105 Q26 92 6 80" stroke="#060010" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <path d="M88 96 Q112 82 132 70" stroke="#060010" stroke-width="9" fill="none" stroke-linecap="round"/>
+        <!-- onyx foliage — near black -->
+        <ellipse cx="69" cy="46" rx="58" ry="40" fill="#04000a"/>
+        <ellipse cx="46" cy="36" rx="38" ry="28" fill="#060010"/>
+        <ellipse cx="94" cy="38" rx="36" ry="26" fill="#05000e"/>
+        <ellipse cx="69" cy="24" rx="46" ry="32" fill="#0c0018"/>
+        <ellipse cx="50" cy="16" rx="28" ry="22" fill="#180028"/>
+        <ellipse cx="90" cy="18" rx="26" ry="20" fill="#140022"/>
+        <ellipse cx="69" cy="8" rx="32" ry="20" fill="#220035"/>
+        <ellipse cx="69" cy="0" rx="20" ry="12" fill="#2e0048" opacity=".9"/>
+        <!-- purple gem-like sheen highlights -->
+        <ellipse cx="46" cy="32" rx="14" ry="8" fill="#5500aa" opacity=".22"/>
+        <ellipse cx="92" cy="28" rx="12" ry="7" fill="#5500aa" opacity=".2"/>
+        <ellipse cx="69" cy="16" rx="16" ry="7" fill="#7700cc" opacity=".18"/>
+        <!-- void eyes -->
+        <ellipse cx="69" cy="188" rx="12" ry="14" fill="#020004"/>
+        <circle cx="63" cy="184" r="4" fill="#aa00ff" opacity=".98"/>
+        <circle cx="75" cy="184" r="4" fill="#aa00ff" opacity=".98"/>
+        <circle cx="63" cy="184" r="1.8" fill="white"/>
+        <circle cx="75" cy="184" r="1.8" fill="white"/>
+        <circle cx="63" cy="184" r=".8" fill="black"/>
+        <circle cx="75" cy="184" r=".8" fill="black"/>
+        <path d="M60 192 Q69 196 78 192" stroke="#9900ee" stroke-width="2.2" fill="none"/>
+      </svg>`},
   ],
 };
 
@@ -2484,12 +3479,15 @@ const SKINS = {
 function initSkins(){
   if(!PROGRESS.equippedSkins) PROGRESS.equippedSkins={};
   if(!PROGRESS.ownedSkins) PROGRESS.ownedSkins={};
-  // Everyone owns their base skin
+  // Ensure all free skins (cost=0) are always owned, and equip base if nothing equipped
   CHARS.forEach(ch=>{
-    const baseSkin=SKINS[ch.id]?.[0];
-    if(baseSkin&&!PROGRESS.ownedSkins[baseSkin.id]) PROGRESS.ownedSkins[baseSkin.id]=true;
-    if(!PROGRESS.equippedSkins[ch.id]) PROGRESS.equippedSkins[ch.id]=baseSkin?.id||null;
+    const skins=SKINS[ch.id]||[];
+    // Own all free skins automatically
+    skins.filter(s=>s.cost===0).forEach(s=>{ PROGRESS.ownedSkins[s.id]=true; });
+    // Default equipped = first skin if nothing set
+    if(!PROGRESS.equippedSkins[ch.id]) PROGRESS.equippedSkins[ch.id]=skins[0]?.id||null;
   });
+  saveProgress(PROGRESS);
 }
 
 function getEquippedSkin(charId){
@@ -2501,10 +3499,8 @@ function getEquippedSkin(charId){
 function getCharSVG(charId){
   const ch=CHARS.find(c=>c.id===charId);if(!ch)return '';
   const skin=getEquippedSkin(charId);
-  const raw=ch.svgFn();
-  if(!skin||!skin.hue)return raw;
-  // Wrap SVG in a span with CSS filter
-  return `<span style="filter:${skin.hue};display:contents;">${raw}</span>`;
+  if(!skin||!skin.svgFn)return ch.svgFn();
+  return skin.svgFn();
 }
 
 // ── Shop UI ──
@@ -2549,38 +3545,48 @@ function buildShopSkinGrid(){
       <div class="sk-preview">${applySkinFilter(ch.svgFn(),skin)}</div>
       <div class="sk-name">${skin.name}</div>
       <div class="sk-cost">${skin.cost===0?'FREE':'🌿 '+skin.cost}</div>`;
+    // Always allow clicking to equip owned/base skins; locked skins also clickable (will show error)
     if(!isEquipped){
       card.onclick=()=>handleSkinClick(ch.id,skin);
+    } else {
+      card.style.cursor='default';
     }
     grid.appendChild(card);
   });
 }
 
 function applySkinFilter(svgHtml,skin){
-  if(!skin.hue)return svgHtml;
-  return `<span style="filter:${skin.hue};display:contents;">${svgHtml}</span>`;
+  if(!skin||!skin.svgFn)return svgHtml;
+  return skin.svgFn();
 }
 
 function handleSkinClick(charId,skin){
-  const owned=!!PROGRESS.ownedSkins?.[skin.id];
+  if(!PROGRESS.ownedSkins) PROGRESS.ownedSkins={};
+  if(!PROGRESS.equippedSkins) PROGRESS.equippedSkins={};
+  // Base skins (cost 0) are always owned
+  const owned = skin.cost===0 || !!PROGRESS.ownedSkins[skin.id];
   if(owned){
     // Equip it
     PROGRESS.equippedSkins[charId]=skin.id;
     saveProgress(PROGRESS);
     buildShopCharList();buildShopSkinGrid();
+    // Also update character select grid to show new skin
+    if(document.getElementById('p1-grid')) updateCharCards();
+    showShopMsg('✓ '+skin.name+' equipped!');
     return;
   }
   if(PROGRESS.treeBucks<skin.cost){
-    showShopMsg('Not enough Tree Bucks! Need '+skin.cost+' 🌿');return;
+    showShopMsg('Need '+skin.cost+' 🌿 Tree Bucks!');return;
   }
-  // Purchase
+  // Purchase + equip
   PROGRESS.treeBucks-=skin.cost;
   PROGRESS.ownedSkins[skin.id]=true;
   PROGRESS.equippedSkins[charId]=skin.id;
   saveProgress(PROGRESS);
   updateWalletUI();
   buildShopCharList();buildShopSkinGrid();
-  showShopMsg('Skin unlocked and equipped!');
+  if(document.getElementById('p1-grid')) updateCharCards();
+  showShopMsg('🌿 '+skin.name+' unlocked and equipped!');
 }
 
 let _shopMsgTimer=null;
@@ -2624,8 +3630,263 @@ function updateArenaLevelTags(c1Id, c2Id){
 }
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');const wb=document.getElementById('wallet-badge');if(wb)wb.classList.toggle('hidden-badge',id==='battle-screen');}
-function showTitle(){initProgress();
-showScreen('title-screen');}
+function showTitle(){_updateTitleUI();showScreen('title-screen');}
+// ═══════════════════════════════════════════════════════════════
+//  FOREST WARRIORS — NETWORK LAYER
+// ═══════════════════════════════════════════════════════════════
+const FW_SERVER = 'https://forest-warriors-server-production.up.railway.app';
+
+let FW_TOKEN  = localStorage.getItem('fw_token') || null;
+let FW_USER   = JSON.parse(localStorage.getItem('fw_user') || 'null');
+let _pollTimer=null;const _pollInterval=2500;
+
+// ── REST helpers ──
+async function apiPost(path, body, auth=false){
+  const h={'Content-Type':'application/json'};
+  if(auth&&FW_TOKEN) h.Authorization='Bearer '+FW_TOKEN;
+  try{
+    const r=await fetch(FW_SERVER+path,{method:'POST',headers:h,body:JSON.stringify(body)});
+    return r.json();
+  }catch(e){return{error:'Cannot reach server'};}
+}
+async function apiGet(path, auth=false){
+  const h={};
+  if(auth&&FW_TOKEN) h.Authorization='Bearer '+FW_TOKEN;
+  try{
+    const r=await fetch(FW_SERVER+path,{headers:h});
+    return r.json();
+  }catch(e){return{error:'Cannot reach server'};}
+}
+
+// ── Auth ──
+async function fwRegister(username,email,password){
+  const d=await apiPost('/auth/register',{username,email,password});
+  if(d.token){FW_TOKEN=d.token;FW_USER=d.user;_persistAuth();fwConnect();}
+  return d;
+}
+async function fwLogin(login,password){
+  const d=await apiPost('/auth/login',{login,password});
+  if(d.token){FW_TOKEN=d.token;FW_USER=d.user;_persistAuth();fwConnect();}
+  return d;
+}
+function fwLogout(){
+  FW_TOKEN=null;FW_USER=null;
+  localStorage.removeItem('fw_token');localStorage.removeItem('fw_user');
+  if(FW_WS){FW_WS.close();FW_WS=null;}
+  _updateTitleUI();
+}
+function _persistAuth(){
+  localStorage.setItem('fw_token',FW_TOKEN);
+  localStorage.setItem('fw_user',JSON.stringify(FW_USER));
+}
+
+// ── Progress sync ──
+async function fwSyncProgress(){
+  if(!FW_TOKEN) return;
+  // Load from server and merge with local (server wins)
+  const remote=await apiGet('/progress',true);
+  if(remote&&!remote.error){
+    // Merge remote into local PROGRESS
+    if(remote.treeBucks>PROGRESS.treeBucks) PROGRESS.treeBucks=remote.treeBucks;
+    if(remote.totalWins>PROGRESS.totalWins) PROGRESS.totalWins=remote.totalWins;
+    if(remote.totalBattles>PROGRESS.totalBattles) PROGRESS.totalBattles=remote.totalBattles;
+    if(remote.chars){
+      Object.entries(remote.chars).forEach(([id,v])=>{
+        if(!PROGRESS.chars[id]) PROGRESS.chars[id]={xp:0,level:0,wins:0,battles:0};
+        const local=PROGRESS.chars[id];
+        if(v.xp>local.xp){local.xp=v.xp;local.level=v.level;}
+        if(v.wins>local.wins) local.wins=v.wins;
+        if(v.battles>local.battles) local.battles=v.battles;
+      });
+    }
+    if(remote.ownedSkins) Object.assign(PROGRESS.ownedSkins||{},remote.ownedSkins);
+    if(remote.equippedSkins) Object.assign(PROGRESS.equippedSkins||{},remote.equippedSkins);
+    saveProgress(PROGRESS);
+    updateWalletUI();
+    updateCharCards();
+  }
+}
+async function fwPushProgress(){
+  if(!FW_TOKEN) return;
+  await apiPost('/progress/save',PROGRESS,true);
+}
+
+// ── WebSocket ──
+function fwConnect(){_updateTitleUI();fwSyncProgress();}
+function fwStopPolling(){if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}}
+async function _doPoll(){
+  if(!FW_TOKEN)return;
+  const d=await apiGet('/mp/poll',true);
+  if(!d||d.error)return;
+  if(d.status==='matched'&&!window._fwMP?.active){
+    fwStopPolling();
+    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+    _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');
+    if(d.actions&&d.actions.length)d.actions.forEach(_mpReceiveAction);
+    setTimeout(()=>showSelect(),1800);
+    _pollTimer=setInterval(_doPoll,_pollInterval);return;
+  }
+  if(d.status==='matched'&&window._fwMP?.active&&d.actions&&d.actions.length)d.actions.forEach(_mpReceiveAction);
+  if(d.status==='waiting')_setOnlineStatus('🔍 Searching...');
+}
+function fwFindMatch(){
+  if(!FW_TOKEN){alert('Please sign in first!');return;}
+  _setOnlineStatus('🔄 Connecting...');
+  if(!FW_WS||FW_WS.readyState!==1){
+    fwConnect();
+    setTimeout(()=>{
+      if(FW_WS&&FW_WS.readyState===1){
+        _wsSend({type:'find_match'});
+        _setOnlineStatus('🔍 Searching for opponent...');
+      } else {
+        _setOnlineStatus('❌ Cannot connect. Try again.');
+      }
+    },2500);
+  } else {
+    _wsSend({type:'find_match'});
+    _setOnlineStatus('🔍 Searching for opponent...');
+  }
+}
+async function fwCreateRoom(){
+  if(!FW_TOKEN){alert('Sign in first!');return;}
+  fwStopPolling();
+  const d=await apiPost('/mp/room/create',{},true);
+  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+  window._fwMP={active:false,roomCode:d.roomCode};
+  const el=document.getElementById('room-code-display');
+  if(el){el.textContent='Room: '+d.roomCode;el.style.display='block';}
+  _setOnlineStatus('🏠 Code: '+d.roomCode+' — share with friend!');
+  _pollTimer=setInterval(_doPoll,_pollInterval);
+}
+async function fwJoinRoom(code){
+  if(!FW_TOKEN){alert('Sign in first!');return;}
+  fwStopPolling();
+  _setOnlineStatus('🔄 Joining '+code+'...');
+  const d=await apiPost('/mp/room/join',{code},true);
+  if(d.error){_setOnlineStatus('❌ '+d.error);return;}
+  window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+  _setOnlineStatus('⚔ Joined vs '+d.opponent+'!');
+  setTimeout(()=>showSelect(),1800);
+  _pollTimer=setInterval(_doPoll,_pollInterval);
+}
+async function fwSendAction(action){if(!FW_TOKEN||!window._fwMP?.active)return;await apiPost('/mp/action',{action},true);}
+function showJoinRoom(){
+  const inp=document.getElementById('room-code-input');
+  if(!inp)return;
+  if(inp.style.display==='none'){
+    inp.style.display='block';inp.focus();
+    inp.onkeydown=e=>{if(e.key==='Enter'&&inp.value.length===6){fwJoinRoom(inp.value);inp.style.display='none';}};
+  } else inp.style.display='none';
+}
+
+function _wsHandle_DISABLED(msg){
+  switch(msg.type){
+    case 'auth_ok':
+      _updateTitleUI();
+      fwSyncProgress();
+      break;
+    case 'queued':
+      _setOnlineStatus('Waiting for opponent...');
+      break;
+    case 'room_created':
+      const cd=document.getElementById('room-code-display');
+      if(cd){cd.textContent='Room: '+msg.code;cd.style.display='block';}
+      _setOnlineStatus('Share this code with your friend');
+      break;
+    case 'match_found':
+      const rcd2=document.getElementById('room-code-display');if(rcd2)rcd2.style.display='none';
+      window._fwMP={active:true,slot:msg.playerSlot,opponent:msg.opponentName,room:msg.roomCode};
+      _setOnlineStatus('⚔ Match found vs '+msg.opponentName+'! You are '+msg.playerSlot.toUpperCase()+'. Pick your fighter!');
+      setTimeout(()=>showSelect(),1800);
+      break;
+    case 'opponent_action':
+      _mpReceiveAction(msg.action);
+      break;
+    case 'opponent_disconnected':
+      _setOnlineStatus('Opponent disconnected');
+      window._fwMP={active:false};
+      break;
+    case 'error':
+      _setOnlineStatus('Error: '+msg.message);
+      break;
+  }
+}
+function _setOnlineStatus(msg){
+  const el=document.getElementById('online-status');
+  if(el) el.textContent=msg;
+}
+
+// ── Title UI ──
+function _updateTitleUI(){
+  const loggedIn=!!FW_USER;
+  const userInfo=document.getElementById('title-user-info');
+  const logoutBtn=document.getElementById('title-logout-btn');
+  const signinBtn=document.getElementById('title-signin-btn');
+  const onlinePanel=document.getElementById('online-panel');
+  if(userInfo){userInfo.textContent=loggedIn?'👤 '+FW_USER.username:'';userInfo.style.display=loggedIn?'block':'none';}
+  if(logoutBtn) logoutBtn.style.display=loggedIn?'block':'none';
+  if(signinBtn) signinBtn.style.display=loggedIn?'none':'block';
+  if(onlinePanel) onlinePanel.style.display=loggedIn?'flex':'none';
+  // Update WS dot
+  const dot=document.getElementById('ws-dot');
+  if(dot){
+    const ok=FW_WS&&FW_WS.readyState===1;
+    dot.textContent=ok?'🟢':'🔴';
+    dot.title=ok?'Connected':'Disconnected — tap Find Match to reconnect';
+  }
+}
+
+// ── Login screen UI ──
+let _loginTab='login';
+function switchLoginTab(tab){
+  _loginTab=tab;
+  document.getElementById('tab-login').classList.toggle('active',tab==='login');
+  document.getElementById('tab-register').classList.toggle('active',tab==='register');
+  document.getElementById('form-login').style.display=tab==='login'?'':'none';
+  document.getElementById('form-register').style.display=tab==='register'?'':'none';
+  document.getElementById('login-submit-btn').textContent=tab==='login'?'SIGN IN':'CREATE ACCOUNT';
+  document.getElementById('login-error').textContent='';
+}
+async function submitLogin(){
+  const btn=document.getElementById('login-submit-btn');
+  const errEl=document.getElementById('login-error');
+  btn.disabled=true;btn.textContent='...';errEl.textContent='';
+  let result;
+  if(_loginTab==='login'){
+    const login=document.getElementById('login-username').value.trim();
+    const pw=document.getElementById('login-password').value;
+    if(!login||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='SIGN IN';return;}
+    result=await fwLogin(login,pw);
+  } else {
+    const username=document.getElementById('reg-username').value.trim();
+    const email=document.getElementById('reg-email').value.trim();
+    const pw=document.getElementById('reg-password').value;
+    if(!username||!email||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='CREATE ACCOUNT';return;}
+    result=await fwRegister(username,email,pw);
+  }
+  if(result.error){
+    errEl.textContent=result.error;
+    btn.disabled=false;
+    btn.textContent=_loginTab==='login'?'SIGN IN':'CREATE ACCOUNT';
+  } else {
+    // Success — go to title
+    _updateTitleUI();
+    showTitle();
+  }
+}
+function skipLogin(){
+  showTitle();
+}
+
+// ── Auto-connect if already logged in ──
+(function(){
+  if(FW_TOKEN){fwConnect();}
+  _updateTitleUI();
+})();
+
+initProgress();
+// Show login screen if not logged in
+if(!FW_TOKEN){showScreen('login-screen');}else{showScreen('title-screen');}
 function showSelect(){p1Char=null;p2Char=null;selectedMap=null;buildGrids();updateSelectUI();updateCharCards();showScreen('select-screen');}
 
 // Credits auto-dismiss
@@ -2651,6 +3912,7 @@ function selectChar(p,id){
   if(p==='p1')p1Char=id;else p2Char=id;
   ['p1','p2'].forEach(px=>{document.querySelectorAll(`#${px}-grid .char-card`).forEach(c=>c.classList.toggle('selected',c.dataset.id===(px==='p1'?p1Char:p2Char)));});
   updateSelectUI();
+  _mpSyncCharSelect(p,id);
 }
 function updateSelectUI(){
   const c1=CHARS.find(c=>c.id===p1Char),c2=CHARS.find(c=>c.id===p2Char);
@@ -2687,6 +3949,8 @@ function startBattle(){
 
   applyMap(selectedMap||'bloodmoon');
   buildBtns('p1',c1);buildBtns('p2',c2);
+  applySkinGlow('p1');applySkinGlow('p2');
+  _mpSetupBattleUI();
   updateHUD();updateTurnUI();setIdle('p1-wrap',1);setIdle('p2-wrap',2);
   showScreen('battle-screen');
   updateFighterLevelTooltips();
@@ -2723,7 +3987,12 @@ function buildBtns(player,char){
 //  BLOCK ACTION
 // ═══════════════════════════════════════════════
 function doBlock(player){
+  triggerBlockVignette(player);
   if(busy)return;
+  if(window._fwMP?.active){
+    if(player!==window._fwMP.slot){return;}
+    fwSendAction({type:'block'});
+  }
   const pn=player==='p1'?1:2;
   if(turn!==pn){showMsg("Not your turn!",900);return;}
   const cd=player==='p1'?p1BlockCooldown:p2BlockCooldown;
@@ -2763,6 +4032,10 @@ function doBlock(player){
 // ═══════════════════════════════════════════════
 function doHeal(player){
   if(busy)return;
+  if(window._fwMP?.active){
+    if(player!==window._fwMP.slot){return;}
+    fwSendAction({type:'heal'});
+  }
   const pn=player==='p1'?1:2;
   if(turn!==pn){showMsg("Not your turn!",900);return;}
   const cd=player==='p1'?p1HealCooldown:p2HealCooldown;
@@ -2774,7 +4047,8 @@ function doHeal(player){
   busy=true;disableAllBtns(true);
   totalRounds++;
 
-  const healAmt=Math.min(70,maxHP-curHP);
+  const healAmt=Math.min(100,maxHP-curHP);
+  triggerHealVignette(player);
   if(player==='p1'){
     p1HP=Math.min(maxHP,p1HP+healAmt);
     p1HealCooldown=Math.floor(Math.random()*3)+2; // 2-4
@@ -2843,6 +4117,12 @@ function spawnHealParticles(x,y){
 // ═══════════════════════════════════════════════
 function doAttack(player,atkIdx,isSpecial){
   if(busy)return;
+  // Multiplayer: only allow your slot to act, then broadcast
+  if(window._fwMP?.active){
+    if(player!==window._fwMP.slot){return;} // not your fighter
+    // Send action to opponent
+    fwSendAction({type:'attack',atkIdx,isSpecial});
+  }
   const pn=player==='p1'?1:2;
   if(turn!==pn){showMsg("Not your turn!",900);return;}
 
@@ -2898,21 +4178,20 @@ function doAttack(player,atkIdx,isSpecial){
   if(isSpecial){
     runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking);
   } else {
-    runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking);
+    runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking,atkIdx);
   }
 }
 
 // ═══════════════════════════════════════════════
 //  NORMAL ATTACK
 // ═══════════════════════════════════════════════
-function runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking){
+function runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking,atkIdx){
   const isP1=player==='p1';
   const attEl=document.getElementById(attWrap);
   const defEl=document.getElementById(defWrap);
   const dur=ATK_DUR[style]||700;
 
   showMsg(atk.msg,1600);
-
   // Attacker animation
   attEl.style.animation='none';void attEl.offsetWidth;
   attEl.style.animation=isP1?ATK_ANIM[style].p1:ATK_ANIM[style].p2;
@@ -2929,6 +4208,7 @@ function runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlock
       handleBlock(player,defWrap,defEl,defC,dmg);
     } else {
       // Normal hit
+      doSkinFX(player,defWrap,atkIdx);
       if(isP1)p2HP=Math.max(0,p2HP-dmg);else p1HP=Math.max(0,p1HP-dmg);
       if(isP1)p1TotalDmg+=dmg;else p2TotalDmg+=dmg;
       updateHUD();updateSpecialBtns();updateHealUI();
@@ -2960,7 +4240,6 @@ function runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking){
   const isP1=player==='p1';
   const attEl=document.getElementById(attWrap);
   const defEl=document.getElementById(defWrap);
-
   const flash=document.getElementById('flash');
   flash.style.background='#fff';
   flash.classList.add('do-flash');
@@ -2984,6 +4263,7 @@ function runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking){
       if(isP1){p2HP=Math.max(0,p2HP-dmg);p1TotalDmg+=dmg;}else{p1HP=Math.max(0,p1HP-dmg);p2TotalDmg+=dmg;}
       updateHUD();updateSpecialBtns();updateHealUI();
       const dr=defEl.getBoundingClientRect();
+      doSkinFX(player,defWrap,-1);
       for(let i=0;i<3;i++) setTimeout(()=>{spawnImpactAt(dr.left+dr.width*(.25+Math.random()*.5),dr.top+dr.height*(.2+Math.random()*.4));spawnShockwaveAt(dr.left+dr.width*.5,dr.top+dr.height*.5);},i*130);
       spawnLeavesAt(dr.left+dr.width*.5,dr.top+dr.height*.4,defC.leafColor,14);
       shakeScreen(true);
@@ -3393,11 +4673,28 @@ function spawnProjectile(emoji,fromWrap,toWrap,delay){
   setTimeout(()=>proj.remove(),delay+100);
 }
 
+
+function triggerHealVignette(healer){
+  const el=document.getElementById('hit-vignette');
+  el.classList.remove('p1-hit','p2-hit','both-hit','p1-heal','p2-heal','p1-block','p2-block');
+  void el.offsetWidth;
+  el.classList.add(healer==='p1'?'p1-heal':'p2-heal');
+  clearTimeout(el._vt);
+  el._vt=setTimeout(()=>el.classList.remove('p1-heal','p2-heal'),1300);
+}
+function triggerBlockVignette(blocker){
+  const el=document.getElementById('hit-vignette');
+  el.classList.remove('p1-hit','p2-hit','both-hit','p1-heal','p2-heal','p1-block','p2-block');
+  void el.offsetWidth;
+  el.classList.add(blocker==='p1'?'p1-block':'p2-block');
+  clearTimeout(el._vt);
+  el._vt=setTimeout(()=>el.classList.remove('p1-block','p2-block'),1000);
+}
 function triggerHitVignette(defender){
   // defender = 'p1' or 'p2' — who got hit
   // p1 is on the left, p2 on the right
   const el = document.getElementById('hit-vignette');
-  el.classList.remove('p1-hit','p2-hit','both-hit');
+  el.classList.remove('p1-hit','p2-hit','both-hit','p1-heal','p2-heal','p1-block','p2-block');
   void el.offsetWidth; // reflow to restart animation
   if(defender==='p1') el.classList.add('p1-hit');
   else el.classList.add('p2-hit');
@@ -3415,222 +4712,219 @@ function shakeScreen(hard=false){
 //  INIT
 // ═══════════════════════════════════════════════
 
-const FW_SERVER='https://forest-warriors-server-production.up.railway.app';
-let FW_TOKEN=localStorage.getItem('fw_token')||null;
-let FW_USER=JSON.parse(localStorage.getItem('fw_user')||'null');
 
-// ── REST helpers ──
-async function apiPost(path,body,auth=false){
-  const h={'Content-Type':'application/json'};
-  if(auth&&FW_TOKEN)h.Authorization='Bearer '+FW_TOKEN;
-  try{const r=await fetch(FW_SERVER+path,{method:'POST',headers:h,body:JSON.stringify(body)});return r.json();}
-  catch(e){return{error:'Cannot reach server'};}
-}
-async function apiGet(path,auth=false){
-  const h={};if(auth&&FW_TOKEN)h.Authorization='Bearer '+FW_TOKEN;
-  try{const r=await fetch(FW_SERVER+path,{headers:h});return r.json();}
-  catch(e){return{error:'Cannot reach server'};}
-}
 
-// ── Auth ──
-async function fwRegister(username,email,password){
-  const d=await apiPost('/auth/register',{username,email,password});
-  if(d.token){FW_TOKEN=d.token;FW_USER=d.user;localStorage.setItem('fw_token',FW_TOKEN);localStorage.setItem('fw_user',JSON.stringify(FW_USER));}
-  return d;
-}
-async function fwLogin(login,password){
-  const d=await apiPost('/auth/login',{login,password});
-  if(d.token){FW_TOKEN=d.token;FW_USER=d.user;localStorage.setItem('fw_token',FW_TOKEN);localStorage.setItem('fw_user',JSON.stringify(FW_USER));}
-  return d;
-}
-function fwLogout(){
-  FW_TOKEN=null;FW_USER=null;
-  localStorage.removeItem('fw_token');localStorage.removeItem('fw_user');
-  fwStopPolling();
-  window._fwMP={active:false};
-  _updateTitleUI();showScreen('login-screen');
-}
+// ── Skin Attack FX ──
+// atks: emoji per attack index [0-4] then special [5]
+// col: flash/glow colour, glow: glow colour for character ring
+const SFX={
+  // ─ Oak ─
+  oak_golden:{
+    glow:'#ffcc00',col:'#ffcc00',
+    atks:['💛','⭐','✨','🌟','💰','👑✨⭐']
+  },
+  oak_shadow:{
+    glow:'#9900ff',col:'#6600cc',
+    atks:['🌑','💀','🌑','👁','💀','💜🌑☠️']
+  },
+  // ─ Pine ─
+  pine_flame:{
+    glow:'#ff4400',col:'#ff4400',
+    atks:['🔥','🌋','💥','🔥','🌋','🔥💥🌋']
+  },
+  pine_ghost:{
+    glow:'rgba(180,220,255,.8)',col:'#aaddff',
+    atks:['👻','❄️','💨','👁','❄️','👻💨❄️']
+  },
+  // ─ Willow ─
+  willow_crimson:{
+    glow:'#cc0020',col:'#cc0020',
+    atks:['🌾','🩸','🩸','🌀','🎋','🩸💢🌹']
+  },
+  willow_void:{
+    glow:'#7700ff',col:'#6600cc',
+    atks:['🌀','✴️','⚫','🌀','💜','🌀⚫💜']
+  },
+  // ─ Cherry ─
+  cherry_gold:{
+    glow:'#ffaa00',col:'#ffaa00',
+    atks:['🌸','💛','🍒','✨','🌼','💛🌸✨']
+  },
+  cherry_night:{
+    glow:'#aa00ff',col:'#8800cc',
+    atks:['🌸','💜','🌑','🌹','🌸','💜🌸🌑']
+  },
+  // ─ Dead ─
+  dead_lava:{
+    glow:'#ff3300',col:'#ff3300',
+    atks:['💥','☄️','🔥','☠️','☄️','🔥💥🌋']
+  },
+  dead_cursed:{
+    glow:'#8800ff',col:'#6600cc',
+    atks:['🪨','☠️','☠️','🌀','💀','☠️💀🌀']
+  },
+  // ─ Palm ─
+  palm_ice:{
+    glow:'#00ccff',col:'#00ccff',
+    atks:['🥥','🌿','🌬️','❄️','🌊','❄️🧊💠']
+  },
+  palm_night:{
+    glow:'#5500aa',col:'#440088',
+    atks:['🌙','🌑','🌙','💫','💜','🌑💫⭐']
+  },
+  // ─ Bonsai ─
+  bonsai_jade:{
+    glow:'#00aa66',col:'#00aa66',
+    atks:['💚','⚡','💎','☯️','🍃','💚✨🍃']
+  },
+  bonsai_obsidian:{
+    glow:'#5500aa',col:'#440088',
+    atks:['⬛','💜','⬛','💫','⬛','⬛💜✦']
+  },
+  // ─ Mangrove ─
+  mangrove_fire:{
+    glow:'#ff4400',col:'#ff4400',
+    atks:['🔥','💥','🔥','🌊','🌊','🔥💥🌊']
+  },
+  mangrove_stone:{
+    glow:'#776655',col:'#665544',
+    atks:['💥','⚫','🗿','🗿','⚫','🗿💥⚫']
+  },
+  // ─ Cactus ─
+  cactus_coral:{
+    glow:'#ff4477',col:'#ff4477',
+    atks:['🌺','🌺','🌺','🩷','💥','🌺🩷💥']
+  },
+  cactus_golden:{
+    glow:'#ffaa00',col:'#ffaa00',
+    atks:['👑','⭐','👑','✨','🌵','👑⭐✨']
+  },
+  // ─ Ghostwood ─
+  ghostwood_ice:{
+    glow:'rgba(160,220,255,.9)',col:'#aaddff',
+    atks:['❄️','🧊','💠','👻','❄️','❄️🧊👻']
+  },
+  ghostwood_void:{
+    glow:'#8800ff',col:'#7700ee',
+    atks:['🌀','💜','👁','🌀','💜','🌀👁💜']
+  },
+  // ─ Redwood ─
+  redwood_inferno:{
+    glow:'#ff3300',col:'#ff3300',
+    atks:['🔥','🌲','🔥','💥','☄️','🔥💥🌋']
+  },
+  redwood_onyx:{
+    glow:'#5500aa',col:'#440088',
+    atks:['⬛','💜','⬛','⬛','🌑','⬛💜🌑']
+  },
+};
 
-// ── Progress ──
-async function fwSyncProgress(){
-  if(!FW_TOKEN)return;
-  const remote=await apiGet('/progress',true);
-  if(remote&&!remote.error){
-    if(remote.treeBucks>PROGRESS.treeBucks)PROGRESS.treeBucks=remote.treeBucks;
-    if(remote.totalWins>PROGRESS.totalWins)PROGRESS.totalWins=remote.totalWins;
-    if(remote.chars)Object.entries(remote.chars).forEach(([id,v])=>{
-      if(!PROGRESS.chars[id])PROGRESS.chars[id]={xp:0,level:0,wins:0,battles:0};
-      const l=PROGRESS.chars[id];if(v.xp>l.xp){l.xp=v.xp;l.level=v.level;}if(v.wins>l.wins)l.wins=v.wins;
-    });
-    if(remote.ownedSkins)Object.assign(PROGRESS.ownedSkins,remote.ownedSkins);
-    if(remote.equippedSkins)Object.assign(PROGRESS.equippedSkins,remote.equippedSkins);
-    saveProgress(PROGRESS);updateWalletUI();
+function doSkinFX(player, defWrap, atkIdx){
+  const charId = player==='p1' ? p1Char : p2Char;
+  const skinId = PROGRESS.equippedSkins?.[charId];
+  const fx = skinId ? SFX[skinId] : null;
+  if(!fx) return;
+
+  const defEl = document.getElementById(defWrap);
+  if(!defEl) return;
+  const r = defEl.getBoundingClientRect();
+
+  // Pick emojis: atkIdx=-1 means special (index 5)
+  const emojiSrc = fx.atks[atkIdx === -1 ? 5 : (atkIdx % 5)] || fx.atks[0];
+  // Special gives all 3 chars of the string, normal gives 1 char
+  const isSpecial = atkIdx === -1;
+  const emojis = isSpecial
+    ? [...emojiSrc.match(/\p{Emoji_Presentation}|\p{Emoji}\uFE0F|./gu)].filter(e=>e.trim())
+    : [emojiSrc];
+
+  // Screen flash
+  const flash = document.createElement('div');
+  flash.className = 'sfx-flash';
+  flash.style.background = fx.col;
+  document.body.appendChild(flash);
+  setTimeout(()=>{ try{flash.remove();}catch(e){} }, 380);
+
+  // Emoji pops — 1 for normal, up to 4 for special
+  const count = isSpecial ? Math.min(4, emojis.length + 1) : 1;
+  for(let i=0;i<count;i++){
+    const el = document.createElement('div');
+    el.className = 'sfx';
+    el.textContent = emojis[i % emojis.length];
+    const spreadX = isSpecial ? (r.left + r.width*(0.1 + i*0.26)) : (r.left + r.width*0.4);
+    const spreadY = r.top + r.height*(isSpecial ? 0.2 : 0.28);
+    el.style.left = spreadX + 'px';
+    el.style.top  = spreadY + 'px';
+    el.style.setProperty('--sd', (0.45 + i*0.08)+'s');
+    el.style.animationDelay = (i*55)+'ms';
+    document.body.appendChild(el);
+    setTimeout(()=>{ try{el.remove();}catch(e){} }, 700 + i*80);
   }
 }
-async function fwPushProgress(){
-  if(!FW_TOKEN)return;
-  await apiPost('/progress/save',PROGRESS,true);
+
+// ── Character glow: apply/remove based on equipped skin ──
+function applySkinGlow(player){
+  const charId = player==='p1' ? p1Char : p2Char;
+  const skinId = PROGRESS.equippedSkins?.[charId];
+  const fx = skinId ? SFX[skinId] : null;
+  const wrapId = player==='p1' ? 'p1-wrap' : 'p2-wrap';
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  // Remove existing glow
+  wrap.querySelectorAll('.skin-glow').forEach(g=>g.remove());
+  if(!fx) return;
+  const glow = document.createElement('div');
+  glow.className = 'skin-glow';
+  glow.style.background = fx.glow;
+  glow.style.boxShadow = '0 0 24px 8px '+fx.glow;
+  wrap.style.position = 'relative';
+  wrap.insertBefore(glow, wrap.firstChild);
 }
 
-// ── HTTP Polling matchmaking ──
-let _pollTimer=null;
-let _pollInterval=2500; // ms between polls
 
-function fwStopPolling(){
-  if(_pollTimer){clearInterval(_pollTimer);_pollTimer=null;}
-}
 
-async function _doPoll(){
-  if(!FW_TOKEN)return;
-  const data=await apiGet('/mp/poll',true);
-  if(!data||data.error)return;
-
-  if(data.status==='matched'&&!window._fwMP?.active){
-    // Just matched!
-    fwStopPolling();
-    window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
-    _setOnlineStatus('⚔ Matched vs '+data.opponent+'! You are '+data.slot.toUpperCase());
-    // Process any immediate actions
-    if(data.actions&&data.actions.length) data.actions.forEach(_mpReceiveAction);
-    setTimeout(()=>showSelect(),1800);
-    // Restart polling for game actions
-    _pollTimer=setInterval(_doPoll,_pollInterval);
-    return;
+// ── Multiplayer receive + UI ──
+function _mpReceiveAction(action){
+  if(!action||!window._fwMP?.active)return;
+  const opp=window._fwMP.slot==='p1'?'p2':'p1';
+  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial);
+  else if(action.type==='block') doBlock(opp);
+  else if(action.type==='heal')  doHeal(opp);
+  else if(action.type==='char_select'){
+    if(window._fwMP.slot==='p1') p2Char=action.charId;
+    else p1Char=action.charId;
+    updateSelectUI();
+    _setOnlineStatus('Opponent chose their fighter!');
   }
-
-  if(data.status==='matched'&&window._fwMP?.active){
-    // Already in game — process incoming actions
-    if(data.actions&&data.actions.length) data.actions.forEach(_mpReceiveAction);
-  }
-
-  if(data.status==='waiting'){
-    _setOnlineStatus('🔍 Searching for opponent...');
-  }
-}
-
-async function fwFindMatch(){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
-  fwStopPolling();
-  window._fwMP={active:false};
-  _setOnlineStatus('🔄 Joining queue...');
-  const data=await apiPost('/mp/queue',{},true);
-  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
-  if(data.status==='matched'){
-    // Instantly matched
-    window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
-    _setOnlineStatus('⚔ Matched vs '+data.opponent+'!');
-    setTimeout(()=>showSelect(),1800);
-  } else {
-    _setOnlineStatus('🔍 Searching... (waiting for opponent)');
-  }
-  // Start polling regardless
-  _pollTimer=setInterval(_doPoll,_pollInterval);
-}
-
-async function fwCreateRoom(){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
-  fwStopPolling();
-  const data=await apiPost('/mp/room/create',{},true);
-  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
-  window._fwMP={active:false,roomCode:data.roomCode};
-  const el=document.getElementById('room-code-display');
-  if(el){el.textContent='Room: '+data.roomCode;el.style.display='block';}
-  _setOnlineStatus('🏠 Share code: '+data.roomCode);
-  _pollTimer=setInterval(_doPoll,_pollInterval);
-}
-
-function showJoinRoom(){
-  const inp=document.getElementById('room-code-input');if(!inp)return;
-  inp.style.display=inp.style.display==='none'||!inp.style.display?'block':'none';
-  if(inp.style.display==='block'){
-    inp.focus();
-    inp.onkeydown=async e=>{
-      if(e.key==='Enter'&&inp.value.length>=4){
-        await fwJoinRoom(inp.value.trim().toUpperCase());
-        inp.style.display='none';
-      }
-    };
+  else if(action.type==='map_select'){
+    selectedMap=action.mapId;
+    showPreBattleAchs(p1Char,p2Char,()=>startBattle());
   }
 }
 
-async function fwJoinRoom(code){
-  if(!FW_TOKEN){alert('Please sign in first!');return;}
-  fwStopPolling();
-  _setOnlineStatus('🔄 Joining room '+code+'...');
-  const data=await apiPost('/mp/room/join',{code},true);
-  if(data.error){_setOnlineStatus('❌ '+data.error);return;}
-  window._fwMP={active:true,slot:data.slot,opponent:data.opponent,roomCode:data.roomCode};
-  _setOnlineStatus('⚔ Joined! vs '+data.opponent);
-  setTimeout(()=>showSelect(),1800);
-  _pollTimer=setInterval(_doPoll,_pollInterval);
+function _mpSetupBattleUI(){
+  if(!window._fwMP?.active)return;
+  const opp=window._fwMP.slot==='p1'?'p2':'p1';
+  const oppCont=document.getElementById(opp+'-controls');
+  if(oppCont) oppCont.innerHTML='<div style="text-align:center;padding:.5rem;font-family:\'Cinzel Decorative\',serif;font-size:.45rem;color:rgba(240,232,208,.3);">Opponent\'s turn...</div>';
+  const oppName=document.getElementById(opp+'-hud-name');
+  if(oppName) oppName.textContent=window._fwMP.opponent+' ⚔';
+  const myName=document.getElementById(window._fwMP.slot+'-hud-name');
+  if(myName) myName.textContent+=' (YOU)';
 }
 
-async function fwSendAction(action){
-  if(!FW_TOKEN||!window._fwMP?.active)return;
-  await apiPost('/mp/action',{action},true);
+function _mpSyncCharSelect(p,id){
+  if(!window._fwMP?.active)return;
+  if(p===window._fwMP.slot) fwSendAction({type:'char_select',charId:id});
+}
+function _mpSyncMapSelect(id){
+  if(!window._fwMP?.active)return;
+  if(window._fwMP.slot==='p1') fwSendAction({type:'map_select',mapId:id});
 }
 
-function fwConnect(){
-  // No-op: we use HTTP polling now, no WebSocket needed
-  _updateTitleUI();
-  fwSyncProgress();
-}
-
-// ── UI helpers ──
-function _setOnlineStatus(msg){
-  const el=document.getElementById('online-status');
-  if(el)el.textContent=msg;
-}
-function _updateTitleUI(){
-  const loggedIn=!!FW_USER;
-  const ui=document.getElementById('title-user-info');
-  const out=document.getElementById('title-logout-btn');
-  const signin=document.getElementById('title-signin-btn');
-  const panel=document.getElementById('online-panel');
-  const dot=document.getElementById('ws-dot');
-  if(ui){ui.textContent=loggedIn?'👤 '+FW_USER.username:'';ui.style.display=loggedIn?'block':'none';}
-  if(out)out.style.display=loggedIn?'block':'none';
-  if(signin)signin.style.display=loggedIn?'none':'block';
-  if(panel)panel.style.display=loggedIn?'flex':'none';
-  if(dot)dot.textContent=loggedIn?'🟢':'⚫';
-}
-
-// ── Login UI ──
-let _loginTab='login';
-function switchLoginTab(tab){
-  _loginTab=tab;
-  document.getElementById('tab-login').classList.toggle('active',tab==='login');
-  document.getElementById('tab-register').classList.toggle('active',tab==='register');
-  document.getElementById('form-login').style.display=tab==='login'?'':'none';
-  document.getElementById('form-register').style.display=tab==='register'?'':'none';
-  document.getElementById('login-submit-btn').textContent=tab==='login'?'SIGN IN':'CREATE ACCOUNT';
-  document.getElementById('login-error').textContent='';
-}
-async function submitLogin(){
-  const btn=document.getElementById('login-submit-btn');
-  const errEl=document.getElementById('login-error');
-  btn.disabled=true;btn.textContent='...';errEl.textContent='';
-  let result;
-  if(_loginTab==='login'){
-    const login=document.getElementById('login-username').value.trim();
-    const pw=document.getElementById('login-password').value;
-    if(!login||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='SIGN IN';return;}
-    result=await fwLogin(login,pw);
-  }else{
-    const username=document.getElementById('reg-username').value.trim();
-    const email=document.getElementById('reg-email').value.trim();
-    const pw=document.getElementById('reg-password').value;
-    if(!username||!email||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='CREATE ACCOUNT';return;}
-    result=await fwRegister(username,email,pw);
-  }
-  if(result.error){
-    errEl.textContent=result.error;btn.disabled=false;
-    btn.textContent=_loginTab==='login'?'SIGN IN':'CREATE ACCOUNT';
-  }else{
-    _updateTitleUI();fwSyncProgress();showTitle();
-  }
-}
-function skipLogin(){showTitle();}
+// ── Init ──
+(function(){if(FW_TOKEN)fwConnect();_updateTitleUI();})();
+initProgress();
+if(!FW_TOKEN){showScreen('login-screen');}else{showTitle();}
 </script>
 </body>
 </html>
