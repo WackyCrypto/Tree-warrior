@@ -1029,12 +1029,17 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
   <button class="btn-primary" onclick="showSelect()">CHOOSE YOUR FIGHTER</button>
   <div id="online-panel" style="display:none">
     <div class="online-panel-title">⚔ PLAY ONLINE <span id="ws-dot">🟢</span></div>
-    <div id="mp-status" style="font-size:clamp(.65rem,2vmin,.85rem);color:#44ffaa;text-align:center;min-height:1.2rem;margin:.2rem 0;font-weight:bold;"></div>
+    <div id="mp-msg" style="font-size:clamp(.6rem,2vmin,.85rem);color:#44ffaa;min-height:1.4rem;text-align:center;margin:.25rem 0;font-weight:bold;"></div>
     <div class="online-btns">
-      <button class="btn-online" id="btn-findmatch" onclick="mpAction('find')">🔍 Find Match</button>
-      <button class="btn-online" id="btn-createroom" onclick="mpAction('create')">🏠 Create Room</button>
+      <button class="btn-online" id="btn-fm" onclick="mpFind()">🔍 Find Match</button>
+      <button class="btn-online" id="btn-cr" onclick="mpCreate()">🏠 Create Room</button>
+      <button class="btn-online" id="btn-jc" onclick="mpEnterCode()">🔑 Enter Code</button>
     </div>
-    <div id="mp-extra" style="margin-top:.5rem;text-align:center;width:100%;"></div>
+    <div id="mp-room-box" style="display:none;text-align:center;margin-top:.4rem;padding:.4rem;border:1px solid rgba(255,200,60,.3);border-radius:6px;background:rgba(255,200,0,.04);">
+      <div style="font-size:.5rem;color:rgba(240,232,208,.4);">Share this code with your friend:</div>
+      <div id="mp-room-code" style="font-size:2.2rem;letter-spacing:.35em;color:#ffcc44;font-family:monospace;font-weight:bold;padding:.2rem 0;"></div>
+      <div style="font-size:.45rem;color:rgba(240,232,208,.3);">Friend taps Enter Code and types it</div>
+    </div>
     </div>
   <button class="btn-primary" style="margin-top:.6rem;" onclick="showAchievements()">&#127942; ACHIEVEMENTS</button>
   <button class="btn-primary" style="margin-top:.4rem;" onclick="showShop()">&#128722; SHOP</button>
@@ -3772,51 +3777,11 @@ function _mpProcessNextAction(){
   setTimeout(waitForFree,300);
 }
 
-async function _doPoll(){
-  if(!FW_TOKEN)return;
-  const d=await apiGet('/mp/poll',true);
-  if(!d||d.error)return;
-  if(d.status==='matched'&&!window._fwMP?.active){
-    fwStopPolling();
-    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-    _setOnlineStatus('⚔ Matched vs '+d.opponent+'! Going to character select...');
-    if(d.actions&&d.actions.length)d.actions.forEach(_mpQueueAction);
-    // Navigate to character select on BOTH sides
-    setTimeout(()=>showSelect(),1200);
-    _pollTimer=setInterval(_doPoll,_pollInterval);return;
-  }
-  if(d.status==='matched'&&window._fwMP?.active&&d.actions&&d.actions.length){
-    d.actions.forEach(_mpQueueAction);
-  }
-  if(d.status==='waiting')_setOnlineStatus('🔍 Searching...');
-}
-async function fwFindMatch(){
-  if(!FW_TOKEN){_mpStatus('❌ Sign in first');return;}
-  _mpStatus('🔄 Connecting...');
-  _mpExtra('');
-  fwStopPolling();window._fwMP={active:false};
-  await apiPost('/mp/reset',{},true);
-  const d=await apiPost('/mp/queue',{},true);
-  if(!d||d.error){_mpStatus('❌ '+(d?.error||'Server error'));return;}
-  if(d.status==='matched'){
-    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-    _mpStatus('⚔ Matched vs '+d.opponent+'!');
-    setTimeout(()=>showSelect(),1200);
-  } else {
-    _mpStatus('🔍 Searching for opponent...');
-    _mpExtra('<button onclick="mpCancel()" style="margin-top:.3rem;background:none;border:1px solid rgba(255,100,100,.4);color:rgba(255,100,100,.7);border-radius:4px;padding:.2rem .6rem;cursor:pointer;font-size:.55rem;">Cancel</button>');
-    _pollTimer=setInterval(_doPoll,1500);
-  }
-}
+async function _doPoll(){return mpPollFn();}
+async function fwFindMatch(){return mpFind();}
 
-function showJoinRoom(){
-  const code=prompt("Enter room code from your friend's screen:");
-  if(code&&code.trim().length>=3) fwJoinRoom(code.trim().toUpperCase());
-}
-async function fwJoinRoomFromInput(){
-  const code=prompt("Enter the room code:");
-  if(code) fwJoinRoom(code.trim().toUpperCase());
-}
+function showJoinRoom(){mpEnterCode();}
+async function fwJoinRoomFromInput(){mpEnterCode();}
 
 function _wsHandle_DISABLED(msg){
   switch(msg.type){
@@ -5078,33 +5043,8 @@ function _mpSyncMapSelect(id){
   if(window._fwMP.slot==='p1') fwSendAction({type:'map_select',mapId:id});
 }
 
-async function fwCreateRoom(){
-  if(!FW_TOKEN){_mpStatus('❌ Sign in first');return;}
-  _mpStatus('🔄 Creating room...');
-  fwStopPolling();window._fwMP={active:false};
-  await apiPost('/mp/reset',{},true);
-  const d=await apiPost('/mp/room/create',{},true);
-  if(!d||d.error){_mpStatus('❌ '+(d?.error||'Server error'));return;}
-  window._fwMP={active:false,roomCode:d.roomCode};
-  _mpStatus('⏳ Waiting for friend...');
-  _mpExtra('<div style="font-size:2rem;letter-spacing:.3em;color:#ffcc44;font-family:monospace;font-weight:bold;margin:.3rem 0;">'+d.roomCode+'</div>'+
-    '<div style="font-size:.5rem;color:rgba(240,232,208,.35);">Tell friend to tap Find Match then enter this code</div>'+
-    '<button onclick="mpCancel()" style="margin-top:.4rem;background:none;border:1px solid rgba(255,100,100,.4);color:rgba(255,100,100,.7);border-radius:4px;padding:.2rem .6rem;cursor:pointer;font-size:.55rem;">Cancel</button>');
-  _pollTimer=setInterval(_doPoll,1500);
-}
-async function fwJoinRoom(code){
-  if(!FW_TOKEN){_mpStatus('❌ Sign in first');return;}
-  _mpStatus('🔄 Joining '+code+'...');
-  fwStopPolling();
-  await apiPost('/mp/reset',{},true);
-  const d=await apiPost('/mp/room/join',{code:code},true);
-  if(!d||d.error){_mpStatus('❌ '+(d?.error||'Room not found'));return;}
-  window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-  _mpStatus('⚔ Joined vs '+d.opponent+'!');
-  _mpExtra('');
-  setTimeout(()=>showSelect(),1200);
-  _pollTimer=setInterval(_doPoll,1500);
-}
+async function fwCreateRoom(){return mpCreate();}
+async function fwJoinRoom(code){return mpJoin(code);}
 async function fwSendAction(action){
   if(!FW_TOKEN||!window._fwMP?.active)return;
   await apiPost('/mp/action',{action:action},true);
@@ -5120,10 +5060,114 @@ function dismissCredits(){
   setTimeout(()=>{ov.style.display='none';},450);
 }
 
-function _mpStatus(msg){const el=document.getElementById('mp-status');if(el)el.textContent=msg;}
-function _mpExtra(html){const el=document.getElementById('mp-extra');if(el)el.innerHTML=html;}
-function mpCancel(){fwStopPolling();window._fwMP={active:false};_mpStatus('');_mpExtra('');apiPost('/mp/reset',{},true);}
-function mpAction(type){if(type==='find')fwFindMatch();else fwCreateRoom();}
+async function mpFind(){
+  if(!FW_TOKEN){mpMsg('❌ Sign in first');return;}
+  mpMsg('🔄 Connecting...');
+  mpButtons(false);
+  fwStopPolling();
+  window._fwMP={active:false};
+  document.getElementById('mp-room-box').style.display='none';
+  await apiPost('/mp/reset',{},true);
+  const d=await apiPost('/mp/queue',{},true);
+  if(!d||d.error){mpMsg('❌ '+(d?.error||'Server error'));mpButtons(true);return;}
+  if(d.status==='matched'){
+    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+    mpMsg('⚔ Matched vs '+d.opponent+'!');
+    mpButtons(true);
+    setTimeout(()=>showSelect(),1200);
+  } else {
+    mpMsg('🔍 Searching... (stay on this screen)');
+    // Show cancel option
+    document.getElementById('btn-fm').textContent='✕ Cancel';
+    document.getElementById('btn-fm').onclick=mpCancel;
+    document.getElementById('btn-fm').style.display='block';
+    document.getElementById('btn-cr').style.display='none';
+    document.getElementById('btn-jc').style.display='none';
+    _pollTimer=setInterval(mpPollFn,1500);
+  }
+}
+async function mpCreate(){
+  if(!FW_TOKEN){mpMsg('❌ Sign in first');return;}
+  mpMsg('🔄 Creating room...');
+  mpButtons(false);
+  fwStopPolling();
+  window._fwMP={active:false};
+  await apiPost('/mp/reset',{},true);
+  const d=await apiPost('/mp/room/create',{},true);
+  if(!d||d.error){mpMsg('❌ '+(d?.error||'Server error'));mpButtons(true);return;}
+  window._fwMP={active:false,roomCode:d.roomCode};
+  const box=document.getElementById('mp-room-box');
+  const code=document.getElementById('mp-room-code');
+  if(box)box.style.display='block';
+  if(code)code.textContent=d.roomCode;
+  mpMsg('⏳ Waiting for opponent...');
+  // Show only cancel
+  document.getElementById('btn-fm').textContent='✕ Cancel';
+  document.getElementById('btn-fm').onclick=mpCancel;
+  document.getElementById('btn-fm').style.display='block';
+  document.getElementById('btn-cr').style.display='none';
+  document.getElementById('btn-jc').style.display='none';
+  _pollTimer=setInterval(mpPollFn,1500);
+}
+function mpEnterCode(){
+  if(!FW_TOKEN){mpMsg('❌ Sign in first');return;}
+  const code=prompt('Enter the 6-letter room code from your friend:');
+  if(code&&code.trim().length>=3){
+    mpJoin(code.trim().toUpperCase());
+  }
+}
+async function mpJoin(code){
+  mpMsg('🔄 Joining room '+code+'...');
+  mpButtons(false);
+  fwStopPolling();
+  window._fwMP={active:false};
+  await apiPost('/mp/reset',{},true);
+  const d=await apiPost('/mp/room/join',{code:code},true);
+  if(!d||d.error){mpMsg('❌ '+(d?.error||'Room not found. Check code.'));mpButtons(true);return;}
+  window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+  mpMsg('⚔ Joined! vs '+d.opponent);
+  mpButtons(true);
+  document.getElementById('mp-room-box').style.display='none';
+  setTimeout(()=>showSelect(),1200);
+  _pollTimer=setInterval(mpPollFn,1500);
+}
+async function mpPollFn(){
+  if(!FW_TOKEN)return;
+  const d=await apiGet('/mp/poll',true);
+  if(!d||d.error)return;
+  if(d.status==='matched'&&!window._fwMP?.active){
+    fwStopPolling();
+    window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
+    mpMsg('⚔ Matched vs '+d.opponent+'!');
+    mpButtons(true);
+    document.getElementById('mp-room-box').style.display='none';
+    if(d.actions&&d.actions.length)d.actions.forEach(_mpQueueAction);
+    setTimeout(()=>showSelect(),1200);
+    _pollTimer=setInterval(mpPollFn,1500);
+    return;
+  }
+  if(d.status==='matched'&&window._fwMP?.active){
+    if(d.actions&&d.actions.length)d.actions.forEach(_mpQueueAction);
+  }
+}
+
+function mpMsg(txt){const el=document.getElementById('mp-msg');if(el)el.textContent=txt;}
+function mpButtons(show){
+  const fm=document.getElementById('btn-fm');
+  const cr=document.getElementById('btn-cr');
+  const jc=document.getElementById('btn-jc');
+  if(fm){fm.style.display=show?'block':'none';fm.textContent='🔍 Find Match';fm.onclick=mpFind;}
+  if(cr){cr.style.display=show?'block':'none';}
+  if(jc){jc.style.display=show?'block':'none';}
+}
+function mpCancel(){
+  fwStopPolling();
+  window._fwMP={active:false};
+  document.getElementById('mp-room-box').style.display='none';
+  mpMsg('');
+  mpButtons(true);
+  apiPost('/mp/reset',{},true);
+}
 
 // ── Init ──
 (function(){
