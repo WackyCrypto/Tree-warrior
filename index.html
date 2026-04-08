@@ -4105,15 +4105,8 @@ function doBlock(player,fromRemote=false){
 // ═══════════════════════════════════════════════
 //  HEAL ACTION
 // ═══════════════════════════════════════════════
-function doHeal(player,fromRemote=false,remoteHealCd=null){
+function doHeal(player,fromRemote=false,remoteHealCd=null,remoteHealAmt=null){
   if(!fromRemote && busy)return;
-  if(window._fwMP?.active && !fromRemote){
-    if(player!==window._fwMP.slot)return;
-    const _hcd=Math.floor(Math.random()*3)+2;
-    fwSendAction({type:'heal',healCd:_hcd});
-    // Use the computed value locally too
-    if(player==='p1') p1HealCooldown=_hcd; else p2HealCooldown=_hcd;
-  }
   const pn=player==='p1'?1:2;
   if(!fromRemote && turn!==pn){showMsg("Not your turn!",900);return;}
   const cd=player==='p1'?p1HealCooldown:p2HealCooldown;
@@ -4125,7 +4118,14 @@ function doHeal(player,fromRemote=false,remoteHealCd=null){
   busy=true;disableAllBtns(true);
   totalRounds++;
 
-  const healAmt=Math.min(120,maxHP-curHP);
+  // Compute heal amount and cooldown ONCE - send to opponent so both use same values
+  const healAmt=remoteHealAmt!==null?remoteHealAmt:Math.min(120,maxHP-curHP);
+  if(window._fwMP?.active && !fromRemote){
+    if(player!==window._fwMP.slot){busy=false;return;}
+    const _hcd=Math.floor(Math.random()*3)+2;
+    if(player==='p1') p1HealCooldown=_hcd; else p2HealCooldown=_hcd;
+    fwSendAction({type:'heal',healCd:_hcd,healAmt:healAmt});
+  }
   triggerHealVignette(player);
   if(player==='p1'){
     p1HP=Math.min(maxHP,p1HP+healAmt);
@@ -4193,7 +4193,7 @@ function spawnHealParticles(x,y){
 // ═══════════════════════════════════════════════
 //  ATTACK ACTION
 // ═══════════════════════════════════════════════
-function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null,remoteBreakCd=0){
+function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null,remoteBreakCd=0,remoteBlocked=null){
   // Remote actions (from opponent) bypass busy + turn checks
   // The queue system ensures they only run when safe
   if(!fromRemote && busy)return;
@@ -4227,7 +4227,8 @@ function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null,remote
   let dmg=remoteDmg!==null?remoteDmg:Math.floor(Math.random()*(atk.dmg[1]-atk.dmg[0]+1))+atk.dmg[0];
 
   // Apply modifiers and get defender state
-  const defBlocking=player==='p1'?(p2Block==='blocking'):(p1Block==='blocking');
+  // Use remote defBlocking if provided (prevents split-state block resolution)
+  const defBlocking=remoteBlocked!==null?remoteBlocked:(player==='p1'?(p2Block==='blocking'):(p1Block==='blocking'));
   const defReduced=player==='p1'?p2DmgReduced:p1DmgReduced;
 
   if(!fromRemote){
@@ -4240,7 +4241,8 @@ function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null,remote
     const _defShieldHP=player==='p1'?p2BlockHP:p1BlockHP;
     const _willBreak=defBlocking && (_defShieldHP-dmg<=0);
     const _breakCd=_willBreak?(Math.floor(Math.random()*3)+1):0;
-    if(window._fwMP?.active) fwSendAction({type:'attack',atkIdx,isSpecial,dmg,breakCd:_breakCd});
+    // Send defBlocking so remote uses IDENTICAL block resolution
+    if(window._fwMP?.active) fwSendAction({type:'attack',atkIdx,isSpecial,dmg,breakCd:_breakCd,blocked:defBlocking});
   }
   // remoteDmg is already post-modifier - no adjustments needed on receiver
 
@@ -4997,9 +4999,9 @@ function applySkinGlow(player){
 function _mpReceiveAction(action){
   if(!action||!window._fwMP?.active)return;
   const opp=window._fwMP.slot==='p1'?'p2':'p1';
-  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial,true,action.dmg||null,action.breakCd||0);
+  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial,true,action.dmg||null,action.breakCd||0,action.blocked!==undefined?action.blocked:null);
   else if(action.type==='block') doBlock(opp,true);
-  else if(action.type==='heal') doHeal(opp,true,action.healCd||null);
+  else if(action.type==='heal') doHeal(opp,true,action.healCd||null,action.healAmt||null);
   else if(action.type==='char_select'){
     // Opponent picked their character
     if(window._fwMP.slot==='p1') p2Char=action.charId;
