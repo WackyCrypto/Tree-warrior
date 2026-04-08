@@ -5075,6 +5075,7 @@ async function mpFind(){
     mpMsg('⚔ Matched vs '+d.opponent+'!');
     mpButtons(true);
     setTimeout(()=>showSelect(),1200);
+    _pollTimer=setInterval(mpPollFn,1500); // CRITICAL: poll for game actions
   } else {
     mpMsg('🔍 Searching... (stay on this screen)');
     // Show cancel option
