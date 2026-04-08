@@ -3759,22 +3759,22 @@ function _mpQueueAction(action){
 }
 function _mpProcessNextAction(){
   if(_mpProcessing||_mpActionQueue.length===0)return;
-  // CRITICAL: check busy BEFORE dequeuing — if busy, retry later
-  // Dequeuing then hitting busy=true in doAttack would silently drop the action
-  if(busy){setTimeout(_mpProcessNextAction,150);return;}
+  if(busy){setTimeout(_mpProcessNextAction,200);return;}
   _mpProcessing=true;
   const action=_mpActionQueue.shift();
   _mpReceiveAction(action);
-  // Wait for animation to complete before processing next queued action
+  // Wait max 6s for animation to clear, then force-continue
+  const startWait=Date.now();
   const waitForFree=()=>{
-    if(!busy){
+    if(!busy||Date.now()-startWait>6000){
+      if(Date.now()-startWait>6000){busy=false;disableAllBtns(false);}
       _mpProcessing=false;
       setTimeout(_mpProcessNextAction,100);
     } else {
       setTimeout(waitForFree,150);
     }
   };
-  setTimeout(waitForFree,300);
+  setTimeout(waitForFree,350);
 }
 
 async function _doPoll(){return mpPollFn();}
@@ -4023,7 +4023,7 @@ function startBattle(){
     window._mpWatchdog=setInterval(()=>{
       if(busy){
         if(!window._mpBusyStart) window._mpBusyStart=Date.now();
-        else if(Date.now()-window._mpBusyStart>8000){
+        else if(Date.now()-window._mpBusyStart>5000){
           console.warn('MP watchdog: resetting stuck busy');
           busy=false;
           _mpProcessing=false;
@@ -4073,7 +4073,7 @@ function doBlock(player,fromRemote=false,remoteCd=null){
   if(!fromRemote && busy)return;
   if(window._fwMP?.active && !fromRemote){
     if(player!==window._fwMP.slot)return;
-    fwSendAction({type:'block'});
+    fwSendAction({type:'block',cd:Math.floor(Math.random()*3)+1});
   }
   const pn=player==='p1'?1:2;
   if(!fromRemote && turn!==pn){showMsg("Not your turn!",900);return;}
@@ -4483,9 +4483,10 @@ function advanceTurn(){
   if(skipP){
     if(turn===1){p1SkipTurn=false;}else{p2SkipTurn=false;}
     busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
-    // Show skip message then auto-pass
     const skipName=turn===1?'Player 1':'Player 2';
     showMsg(`⏭ ${skipName}'s turn skipped (healing)`,1600);
+    // Process any queued MP actions BEFORE the auto-advance
+    if(window._fwMP?.active){window._mpBusyStart=null;_mpProcessing=false;setTimeout(_mpProcessNextAction,80);}
     setTimeout(()=>{
       if(!busy){
         busy=true;disableAllBtns(true);
@@ -4496,10 +4497,13 @@ function advanceTurn(){
   }
 
   busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
-  // After each turn, process any queued remote actions
   if(window._fwMP?.active){
     window._mpBusyStart=null;
     setTimeout(_mpProcessNextAction,80);
+    // Every 4 turns, send a full state sync so both sides stay aligned
+    if(totalRounds>0 && totalRounds%4===0 && window._fwMP.slot==='p1'){
+      fwSendAction({type:'state_sync',p1HP,p2HP,turn,round});
+    }
   }
 }
 
@@ -5015,9 +5019,17 @@ function _mpReceiveAction(action){
     mpMsg('🗺 Map chosen! Starting battle...');
     setTimeout(()=>showPreBattleAchs(p1Char,p2Char,()=>startBattle()),800);
   }
+  else if(action.type==='state_sync'){
+    // Authoritative state from P1 — correct any drift
+    if(action.p1HP!==undefined && Math.abs(p1HP-action.p1HP)>5){
+      p1HP=action.p1HP;p2HP=action.p2HP;
+      updateHUD();
+    }
+  }
   else if(action.type==='opponent_disconnected'){
-    mpMsg('❌ Opponent disconnected. Game over.');
+    mpMsg('❌ Opponent disconnected.');
     window._fwMP={active:false};
+    busy=false;disableAllBtns(false);
   }
 }
 
@@ -5145,19 +5157,25 @@ async function mpPollFn(){
   if(!FW_TOKEN)return;
   const d=await apiGet('/mp/poll',true);
   if(!d||d.error)return;
+  // Newly matched
   if(d.status==='matched'&&!window._fwMP?.active){
     fwStopPolling();
     window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
     mpMsg('⚔ Matched vs '+d.opponent+'!');
-    mpButtons(true);
-    document.getElementById('mp-room-box').style.display='none';
+    try{mpButtons(true);}catch(e){}
+    try{document.getElementById('mp-room-box').style.display='none';}catch(e){}
     if(d.actions&&d.actions.length)d.actions.forEach(_mpQueueAction);
     setTimeout(()=>showSelect(),1200);
     _pollTimer=setInterval(mpPollFn,1500);
     return;
   }
+  // Already matched - just process incoming actions
   if(d.status==='matched'&&window._fwMP?.active){
     if(d.actions&&d.actions.length)d.actions.forEach(_mpQueueAction);
+  }
+  // Lost connection to room
+  if(d.status==='idle'&&window._fwMP?.active){
+    mpMsg('⚠ Connection lost - reconnecting...');
   }
 }
 
