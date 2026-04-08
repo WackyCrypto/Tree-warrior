@@ -4061,12 +4061,12 @@ function buildBtns(player,char){
 // ═══════════════════════════════════════════════
 //  BLOCK ACTION
 // ═══════════════════════════════════════════════
-function doBlock(player,fromRemote=false,remoteCd=null){
+function doBlock(player,fromRemote=false){
   triggerBlockVignette(player);
   if(!fromRemote && busy)return;
   if(window._fwMP?.active && !fromRemote){
     if(player!==window._fwMP.slot)return;
-    fwSendAction({type:'block',cd:Math.floor(Math.random()*3)+1});
+    fwSendAction({type:'block'});
   }
   const pn=player==='p1'?1:2;
   if(!fromRemote && turn!==pn){showMsg("Not your turn!",900);return;}
@@ -4193,7 +4193,7 @@ function spawnHealParticles(x,y){
 // ═══════════════════════════════════════════════
 //  ATTACK ACTION
 // ═══════════════════════════════════════════════
-function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null){
+function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null,remoteBreakCd=0){
   // Remote actions (from opponent) bypass busy + turn checks
   // The queue system ensures they only run when safe
   if(!fromRemote && busy)return;
@@ -4223,28 +4223,33 @@ function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null){
   totalRounds++;
 
   const atk=isSpecial?attC.special:attC.attacks[atkIdx];
+  // Compute base random damage (or use value sent by opponent)
   let dmg=remoteDmg!==null?remoteDmg:Math.floor(Math.random()*(atk.dmg[1]-atk.dmg[0]+1))+atk.dmg[0];
-  // In MP: now send with computed dmg so both sides use same value
-  if(window._fwMP?.active && !fromRemote){
-    fwSendAction({type:'attack',atkIdx,isSpecial,dmg});
+
+  // Apply modifiers and get defender state
+  const defBlocking=player==='p1'?(p2Block==='blocking'):(p1Block==='blocking');
+  const defReduced=player==='p1'?p2DmgReduced:p1DmgReduced;
+
+  if(!fromRemote){
+    // Attacker's device: apply ALL modifiers, then send FINAL value
+    const attBroken=player==='p1'?p1BlockBroken:p2BlockBroken;
+    if(attBroken&&!isSpecial)dmg=Math.round(dmg*0.7);
+    if(defReduced&&!defBlocking)dmg=Math.round(dmg*.6);
+    // Send post-modifier damage so receiver uses identical number
+    // Pre-compute shield break CD if defender's shield will break
+    const _defShieldHP=player==='p1'?p2BlockHP:p1BlockHP;
+    const _willBreak=defBlocking && (_defShieldHP-dmg<=0);
+    const _breakCd=_willBreak?(Math.floor(Math.random()*3)+1):0;
+    if(window._fwMP?.active) fwSendAction({type:'attack',atkIdx,isSpecial,dmg,breakCd:_breakCd});
   }
+  // remoteDmg is already post-modifier - no adjustments needed on receiver
 
-  // 30% damage penalty if attacker's OWN shield is broken (exposed bark)
-  const attBroken=player==='p1'?p1BlockBroken:p2BlockBroken;
-  if(attBroken&&!isSpecial){dmg=Math.round(dmg*0.7);}
-
-  // Set this attack's cooldown
+  // Set attack cooldown
   if(!isSpecial){
     const cds=player==='p1'?p1AtkCooldowns:p2AtkCooldowns;
     const cd=attC.attacks[atkIdx].cd||0;
     if(cd>0) cds[atkIdx]=cd;
   }
-
-  // Check defender blocking
-  const defBlocking=player==='p1'?(p2Block==='blocking'):(p1Block==='blocking');
-  // Apply 60% damage reduction if defender healed last turn
-  const defReduced=player==='p1'?p2DmgReduced:p1DmgReduced;
-  if(defReduced&&!defBlocking){dmg=Math.round(dmg*.6);} // 40% damage reduction
 
   if(!isSpecial){
     if(player==='p1'&&!p1SpecialUsed)p1Power=Math.min(100,p1Power+attC.powerPerHit);
@@ -4259,16 +4264,16 @@ function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null){
   const style=atk.style||'lunge';
 
   if(isSpecial){
-    runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking);
+    runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking,fromRemote?remoteBreakCd:(typeof _breakCd!=='undefined'?_breakCd:0));
   } else {
-    runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking,atkIdx);
+    runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking,atkIdx,fromRemote?remoteBreakCd:(typeof _breakCd!=='undefined'?_breakCd:0));
   }
 }
 
 // ═══════════════════════════════════════════════
 //  NORMAL ATTACK
 // ═══════════════════════════════════════════════
-function runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking,atkIdx){
+function runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlocking,atkIdx,breakCd=0){
   const isP1=player==='p1';
   const attEl=document.getElementById(attWrap);
   const defEl=document.getElementById(defWrap);
@@ -4288,7 +4293,7 @@ function runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlock
   setTimeout(()=>{
     if(defBlocking){
       // BLOCKED!
-      handleBlock(player,defWrap,defEl,defC,dmg);
+      handleBlock(player,defWrap,defEl,defC,dmg,false,breakCd);
     } else {
       // Normal hit
       doSkinFX(player,defWrap,atkIdx);
@@ -4319,7 +4324,7 @@ function runNormalAttack(player,attWrap,defWrap,attC,defC,atk,dmg,style,defBlock
 // ═══════════════════════════════════════════════
 //  SPECIAL ATTACK
 // ═══════════════════════════════════════════════
-function runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking){
+function runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking,breakCd=0){
   const isP1=player==='p1';
   const attEl=document.getElementById(attWrap);
   const defEl=document.getElementById(defWrap);
@@ -4341,7 +4346,7 @@ function runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking){
     if(defBlocking){
       // Even specials can be partially blocked
       dmg=Math.round(dmg*.4);
-      handleBlock(player,defWrap,defEl,defC,dmg,true);
+      handleBlock(player,defWrap,defEl,defC,dmg,true,breakCd);
     } else {
       if(isP1){p2HP=Math.max(0,p2HP-dmg);p1TotalDmg+=dmg;}else{p1HP=Math.max(0,p1HP-dmg);p2TotalDmg+=dmg;}
       updateHUD();updateSpecialBtns();updateHealUI();
@@ -4367,7 +4372,7 @@ function runSpecialAttack(player,attWrap,defWrap,attC,defC,atk,dmg,defBlocking){
 // ═══════════════════════════════════════════════
 //  BLOCK RESOLUTION
 // ═══════════════════════════════════════════════
-function handleBlock(attacker,defWrap,defEl,defC,dmg,isSpecial=false){
+function handleBlock(attacker,defWrap,defEl,defC,dmg,isSpecial=false,breakCd=0){
   const defender=attacker==='p1'?'p2':'p1';
   const isDefP1=defender==='p1';
 
@@ -4383,7 +4388,7 @@ function handleBlock(attacker,defWrap,defEl,defC,dmg,isSpecial=false){
     p1BlockHP=newShieldHP;
     if(shieldBroken){
       p1Block=null;p1BlockBroken=true;
-      const cd=remoteCd||Math.floor(Math.random()*3)+1;
+      const cd=breakCd||Math.floor(Math.random()*3)+1;
       p1BlockCooldown=cd;
       p1Blocks++;
       if(overflow>0) p1HP=Math.max(0,p1HP-overflow);
@@ -4393,7 +4398,7 @@ function handleBlock(attacker,defWrap,defEl,defC,dmg,isSpecial=false){
     p2BlockHP=newShieldHP;
     if(shieldBroken){
       p2Block=null;p2BlockBroken=true;
-      const cd=remoteCd||Math.floor(Math.random()*3)+1;
+      const cd=breakCd||Math.floor(Math.random()*3)+1;
       p2BlockCooldown=cd;
       p2Blocks++;
       if(overflow>0) p2HP=Math.max(0,p2HP-overflow);
@@ -4493,10 +4498,7 @@ function advanceTurn(){
   if(window._fwMP?.active){
     window._mpBusyStart=null;
     setTimeout(_mpProcessNextAction,80);
-    // Every 4 turns, send a full state sync so both sides stay aligned
-    if(totalRounds>0 && totalRounds%4===0 && window._fwMP.slot==='p1'){
-      fwSendAction({type:'state_sync',p1HP,p2HP,turn,round});
-    }
+
   }
 }
 
@@ -4995,8 +4997,8 @@ function applySkinGlow(player){
 function _mpReceiveAction(action){
   if(!action||!window._fwMP?.active)return;
   const opp=window._fwMP.slot==='p1'?'p2':'p1';
-  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial,true,action.dmg||null);
-  else if(action.type==='block') doBlock(opp,true,action.cd||null);
+  if(action.type==='attack') doAttack(opp,action.atkIdx,action.isSpecial,true,action.dmg||null,action.breakCd||0);
+  else if(action.type==='block') doBlock(opp,true);
   else if(action.type==='heal') doHeal(opp,true,action.healCd||null);
   else if(action.type==='char_select'){
     // Opponent picked their character
@@ -5020,13 +5022,7 @@ function _mpReceiveAction(action){
     mpMsg('🗺 Map chosen! Starting battle...');
     setTimeout(()=>showPreBattleAchs(p1Char,p2Char,()=>startBattle()),800);
   }
-  else if(action.type==='state_sync'){
-    // Authoritative state from P1 — correct any drift
-    if(action.p1HP!==undefined && Math.abs(p1HP-action.p1HP)>5){
-      p1HP=action.p1HP;p2HP=action.p2HP;
-      updateHUD();
-    }
-  }
+
   else if(action.type==='opponent_disconnected'){
     mpMsg('❌ Opponent disconnected.');
     window._fwMP={active:false};
