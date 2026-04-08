@@ -1033,7 +1033,7 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
   <p class="title-story">When the blood moon rises, ancient warriors of root and bark emerge from the depths. Choose your champion. Attack, block, and outlast your foe to claim the forest throne.</p>
   <button class="btn-primary" onclick="showSelect()">CHOOSE YOUR FIGHTER</button>
   <div id="online-panel" style="display:none">
-    <div class="online-panel-title">⚔ PLAY ONLINE <span id="ws-dot">🟢</span></div>
+    <div class="online-panel-title">★ PLAY ONLINE <span id="ws-dot">🟢</span></div>
     <div id="mp-msg" style="font-size:clamp(.6rem,2vmin,.85rem);color:#44ffaa;min-height:1.4rem;text-align:center;margin:.25rem 0;font-weight:bold;"></div>
     <div class="online-btns">
       <button class="btn-online" id="btn-fm" onclick="mpFind()">🔍 Find Match</button>
@@ -1060,7 +1060,7 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
   </div>
   <div class="fighters-row">
     <div class="player-slot">
-      <div style="display:flex;align-items:center;gap:.5vmin;"><div class="player-label">⚔ PLAYER 1</div><button class="btn-random" onclick="randomChar('p1')">🎲</button></div>
+      <div style="display:flex;align-items:center;gap:.5vmin;"><div class="player-label">★ PLAYER 1</div><button class="btn-random" onclick="randomChar('p1')">🎲</button></div>
       <div class="char-grid" id="p1-grid"></div>
     </div>
     <div class="vs-divider">
@@ -1068,7 +1068,7 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
       <div id="match-preview" style="font-style:italic;font-size:.45rem;color:rgba(240,232,208,.3);text-align:center;max-width:55px;line-height:1.4;"></div>
     </div>
     <div class="player-slot">
-      <div style="display:flex;align-items:center;gap:.5vmin;"><div class="player-label">PLAYER 2 ⚔</div><button class="btn-random" onclick="randomChar('p2')">🎲</button></div>
+      <div style="display:flex;align-items:center;gap:.5vmin;"><div class="player-label">PLAYER 2 ★</div><button class="btn-random" onclick="randomChar('p2')">🎲</button></div>
       <div class="char-grid" id="p2-grid"></div>
     </div>
   </div>
@@ -1093,7 +1093,7 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
     <div class="map-summary" id="map-summary">Select a battlefield</div>
     <div style="display:flex;gap:.8vmin;align-items:center;justify-content:center;flex-wrap:wrap;">
       <button class="btn-random-map" onclick="randomMap()">🎲 Random Map</button>
-      <button class="btn-primary" id="map-fight-btn" onclick="confirmMap()" disabled>⚔ ENTER THE ARENA</button>
+      <button class="btn-primary" id="map-fight-btn" onclick="confirmMap()" disabled>★ ENTER THE ARENA</button>
     </div>
   </div>
   <button style="margin-top:.4vmin;background:none;border:none;color:rgba(240,232,208,.2);font-family:'Crimson Pro',serif;font-style:italic;cursor:pointer;font-size:clamp(.42rem,1.3vmin,.65rem);" onclick="showSelect()">← Back to Character Select</button>
@@ -1156,12 +1156,12 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
 
   <div id="controls">
     <div class="control-panel" id="p1-ctrl">
-      <div class="cp-title">⚔ PLAYER 1</div>
+      <div class="cp-title">PLAYER 1</div>
       <div class="atk-row" id="p1-btns"></div>
       <div class="turn-ind active" id="p1-turn">Your Turn!</div>
     </div>
     <div class="control-panel right" id="p2-ctrl">
-      <div class="cp-title">PLAYER 2 ⚔</div>
+      <div class="cp-title">PLAYER 2</div>
       <div class="atk-row" id="p2-btns"></div>
       <div class="turn-ind" id="p2-turn">Waiting…</div>
     </div>
@@ -1180,7 +1180,7 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
   <div class="win-stats" id="win-stats"></div>
   <div class="win-reward" id="win-reward" style="display:none"></div>
   <div class="win-btns">
-    <button class="btn-primary" onclick="showSelect()">⚔ REMATCH</button>
+    <button class="btn-primary" onclick="showSelect()">★ REMATCH</button>
     <button class="btn-primary" onclick="showTitle()">TITLE SCREEN</button>
   </div>
 </div>
@@ -3793,7 +3793,7 @@ function _wsHandle_DISABLED(msg){
     case 'match_found':
       const rcd2=document.getElementById('room-code-display');if(rcd2)rcd2.style.display='none';
       window._fwMP={active:true,slot:msg.playerSlot,opponent:msg.opponentName,room:msg.roomCode};
-      _setOnlineStatus('⚔ Match found vs '+msg.opponentName+'! You are '+msg.playerSlot.toUpperCase()+'. Pick your fighter!');
+      _setOnlineStatus('★ Match found vs '+msg.opponentName+'! You are '+msg.playerSlot.toUpperCase()+'. Pick your fighter!');
       setTimeout(()=>showSelect(),1800);
       break;
     case 'opponent_action':
@@ -3994,8 +3994,8 @@ function startBattle(){
   document.getElementById('p2-svg').innerHTML=getCharSVG(p2Char);
   document.getElementById('p1-arena-name').textContent=c1.name;
   document.getElementById('p2-arena-name').textContent=c2.name;
-  document.getElementById('p1-hud-name').textContent=`⚔ ${c1.name}`;
-  document.getElementById('p2-hud-name').textContent=`${c2.name} ⚔`;
+  document.getElementById('p1-hud-name').textContent=c1.name;
+  document.getElementById('p2-hud-name').textContent=c2.name;
 
   // Stars — coloured per map
   const sc=document.getElementById('stars');sc.innerHTML='';
@@ -4009,7 +4009,7 @@ function startBattle(){
   updateHUD();updateTurnUI();setIdle('p1-wrap',1);setIdle('p2-wrap',2);
   showScreen('battle-screen');
   updateFighterLevelTooltips();
-  showMsg('⚔ BATTLE START ⚔',2000);
+  showMsg('★ BATTLE START ★',2000);
   // Safety: watchdog timer resets stuck busy state in MP
   if(window._mpWatchdog) clearInterval(window._mpWatchdog);
   if(window._fwMP?.active){
@@ -4472,7 +4472,7 @@ function advanceTurn(){
 
   turn=turn===1?2:1;
   if(turn===1)round++;
-  document.getElementById('round-badge').textContent=`ROUND \${round}`;
+  document.getElementById('round-badge').textContent=`ROUND ${round}`;
 
   // Tick heal cooldowns for whoever just became the active player
   if(turn===1){ if(p1HealCooldown>0)p1HealCooldown--; }
@@ -4684,18 +4684,25 @@ function updateTurnUI(){
   const mp=window._fwMP?.active;
   const mySlot=mp?window._fwMP.slot:null;
   const oppName=mp?window._fwMP.opponent:'Player 2';
+  // In MP: show YOUR TURN / opponent name / Waiting clearly
   if(turn===1){
-    p1t.textContent=mp?(mySlot==='p1'?'⚔ YOUR TURN':'⚔ '+oppName+"'s turn"):'⚔ P1 Turn';
-    p1t.className='turn-ind active';
-    p2t.textContent=mp?(mySlot==='p2'?'⚔ YOUR TURN':'Waiting...'):'Waiting…';
-    p2t.className='turn-ind';
-    p1c.classList.add('your-turn');p2c.classList.remove('your-turn');
+    if(mp){
+      p1t.textContent=mySlot==='p1'?'YOUR TURN':oppName+"'s turn";
+      p2t.textContent=mySlot==='p2'?'YOUR TURN':'Waiting...';
+    } else {
+      p1t.textContent='P1 Turn'; p2t.textContent='Waiting...';
+    }
+    p1t.className='turn-ind active'; p2t.className='turn-ind';
+    p1c.classList.add('your-turn'); p2c.classList.remove('your-turn');
   } else {
-    p2t.textContent=mp?(mySlot==='p2'?'⚔ YOUR TURN':'⚔ '+oppName+"'s turn"):'⚔ P2 Turn';
-    p2t.className='turn-ind active';
-    p1t.textContent=mp?(mySlot==='p1'?'⚔ YOUR TURN':'Waiting...'):'Waiting…';
-    p1t.className='turn-ind';
-    p2c.classList.add('your-turn');p1c.classList.remove('your-turn');
+    if(mp){
+      p2t.textContent=mySlot==='p2'?'YOUR TURN':oppName+"'s turn";
+      p1t.textContent=mySlot==='p1'?'YOUR TURN':'Waiting...';
+    } else {
+      p2t.textContent='P2 Turn'; p1t.textContent='Waiting...';
+    }
+    p2t.className='turn-ind active'; p1t.className='turn-ind';
+    p2c.classList.add('your-turn'); p1c.classList.remove('your-turn');
   }
   updateSpecialBtns();
   updateBlockUI();
@@ -4728,9 +4735,7 @@ function updateTurnUI(){
     bb.disabled=!myTurn||cd>0||isBlocking;
     if(cd>0||isBlocking)bb.classList.add('on-cooldown');else bb.classList.remove('on-cooldown');
   });
-
-  // MP: update turn labels
-  if(window._fwMP?.active && window._mpUpdateTurnLabels) window._mpUpdateTurnLabels();}
+}
 function disableAllBtns(s){document.querySelectorAll('.atk-btn,.block-btn,.heal-btn').forEach(b=>b.disabled=s);}
 
 // ═══════════════════════════════════════════════
@@ -5012,7 +5017,7 @@ function _mpReceiveAction(action){
       cd.classList.toggle('selected',cd.dataset.id===action.charId);
     });
     updateSelectUI();
-    mpMsg('⚔ '+window._fwMP.opponent+' chose their fighter!');
+    mpMsg('★ '+window._fwMP.opponent+' chose their fighter!');
   }
   else if(action.type==='map_select'){
     // P1 picked map — P2 starts battle
@@ -5036,22 +5041,21 @@ function _mpSetupBattleUI(){
   if(!window._fwMP?.active)return;
   const me=window._fwMP.slot;
   const opp=me==='p1'?'p2':'p1';
-  // Hide opponent's attack buttons, show waiting text instead
+  // Hide opponent's attack buttons, show opponent name instead
   const oppBtns=document.getElementById(opp+'-btns');
-  if(oppBtns) oppBtns.innerHTML='<div style="text-align:center;padding:.8rem .3rem;color:rgba(240,232,208,.3);font-size:.5rem;">Opponent controls</div>';
-  // Label HUD names
-  const oppName=document.getElementById(opp+'-hud-name');
-  if(oppName) oppName.textContent=window._fwMP.opponent+' ⚔';
-  const myName=document.getElementById(me+'-hud-name');
-  if(myName) myName.textContent+=' (YOU)';
-  // Update turn labels to say YOUR TURN / OPPONENT TURN
-  window._mpUpdateTurnLabels=function(){
-    const myTurn=(me==='p1'&&turn===1)||(me==='p2'&&turn===2);
-    const myTurnEl=document.getElementById(me+'-turn');
-    const oppTurnEl=document.getElementById(opp+'-turn');
-    if(myTurnEl) myTurnEl.textContent=myTurn?'⚔ YOUR TURN':'Waiting...';
-    if(oppTurnEl) oppTurnEl.textContent=myTurn?'Waiting...':'⚔ Opponent\'s turn';
-  };
+  if(oppBtns) oppBtns.innerHTML='<div style="text-align:center;padding:.8rem .3rem;color:rgba(240,232,208,.25);font-size:.45rem;">'+window._fwMP.opponent+'</div>';
+  // Label the ctrl panel header with opponent name
+  const oppCtrlTitle=document.querySelector('#'+opp+'-ctrl .cp-title');
+  if(oppCtrlTitle) oppCtrlTitle.textContent=window._fwMP.opponent;
+  // Label my panel header
+  const myCtrlTitle=document.querySelector('#'+me+'-ctrl .cp-title');
+  if(myCtrlTitle) myCtrlTitle.textContent='YOU';
+  // Label HUD names clearly
+  const oppNameEl=document.getElementById(opp+'-hud-name');
+  if(oppNameEl) oppNameEl.textContent=window._fwMP.opponent;
+  const myNameEl=document.getElementById(me+'-hud-name');
+  if(myNameEl) myNameEl.textContent+=' (YOU)';
+
 }
 
 function _mpSyncCharSelect(p,id){
@@ -5092,7 +5096,7 @@ async function mpFind(){
   if(!d||d.error){mpMsg('❌ '+(d?.error||'Server error'));mpButtons(true);return;}
   if(d.status==='matched'){
     window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-    mpMsg('⚔ Matched vs '+d.opponent+'!');
+    mpMsg('★ Matched vs '+d.opponent+'!');
     mpButtons(true);
     setTimeout(()=>showSelect(),1200);
     _pollTimer=setInterval(mpPollFn,1500); // CRITICAL: poll for game actions
@@ -5146,7 +5150,7 @@ async function mpJoin(code){
   const d=await apiPost('/mp/room/join',{code:code},true);
   if(!d||d.error){mpMsg('❌ '+(d?.error||'Room not found. Check code.'));mpButtons(true);return;}
   window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-  mpMsg('⚔ Joined! vs '+d.opponent);
+  mpMsg('★ Joined! vs '+d.opponent);
   mpButtons(true);
   document.getElementById('mp-room-box').style.display='none';
   setTimeout(()=>showSelect(),1200);
@@ -5160,7 +5164,7 @@ async function mpPollFn(){
   if(d.status==='matched'&&!window._fwMP?.active){
     fwStopPolling();
     window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-    mpMsg('⚔ Matched vs '+d.opponent+'!');
+    mpMsg('★ Matched vs '+d.opponent+'!');
     try{mpButtons(true);}catch(e){}
     try{document.getElementById('mp-room-box').style.display='none';}catch(e){}
     if(d.actions&&d.actions.length)d.actions.forEach(_mpQueueAction);
