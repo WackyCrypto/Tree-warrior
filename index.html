@@ -3852,7 +3852,7 @@ function showJoinRoom(){
     _setOnlineStatus('');
   }
 }
-async async function fwJoinRoomFromInput(){
+async function fwJoinRoomFromInput(){
   const inp=document.getElementById('room-code-input');
   if(!inp||inp.value.length<4){_setOnlineStatus('❌ Enter the full room code');return;}
   const area=document.getElementById('join-room-area');
