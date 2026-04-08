@@ -1187,18 +1187,6 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
 
 <script>
 
-// ── Global error catcher ──
-window.onerror=function(msg,src,line,col,err){
-  const el=document.getElementById('online-status');
-  if(el) el.textContent='JS ERROR: '+msg+' (line '+line+')';
-  const el2=document.getElementById('title-error');
-  if(el2) el2.textContent='ERROR: '+msg;
-  return false;
-};
-window.addEventListener('unhandledrejection',function(e){
-  const el=document.getElementById('online-status');
-  if(el) el.textContent='PROMISE ERROR: '+e.reason;
-});
 
 // ═══════════════════════════════════════════════════════
 //  MAPS
