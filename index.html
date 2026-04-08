@@ -3761,10 +3761,13 @@ function _mpQueueAction(action){
 }
 function _mpProcessNextAction(){
   if(_mpProcessing||_mpActionQueue.length===0)return;
+  // CRITICAL: check busy BEFORE dequeuing — if busy, retry later
+  // Dequeuing then hitting busy=true in doAttack would silently drop the action
+  if(busy){setTimeout(_mpProcessNextAction,150);return;}
   _mpProcessing=true;
   const action=_mpActionQueue.shift();
   _mpReceiveAction(action);
-  // Wait for busy to clear before processing next action
+  // Wait for animation to complete before processing next queued action
   const waitForFree=()=>{
     if(!busy){
       _mpProcessing=false;
@@ -3773,7 +3776,7 @@ function _mpProcessNextAction(){
       setTimeout(waitForFree,150);
     }
   };
-  setTimeout(waitForFree,200);
+  setTimeout(waitForFree,300);
 }
 
 async function _doPoll(){
@@ -3783,9 +3786,10 @@ async function _doPoll(){
   if(d.status==='matched'&&!window._fwMP?.active){
     fwStopPolling();
     window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
-    _setOnlineStatus('⚔ Matched vs '+d.opponent+'!');
+    _setOnlineStatus('⚔ Matched vs '+d.opponent+'! Going to character select...');
     if(d.actions&&d.actions.length)d.actions.forEach(_mpQueueAction);
-    setTimeout(()=>showSelect(),1800);
+    // Navigate to character select on BOTH sides
+    setTimeout(()=>showSelect(),1200);
     _pollTimer=setInterval(_doPoll,_pollInterval);return;
   }
   if(d.status==='matched'&&window._fwMP?.active&&d.actions&&d.actions.length){
@@ -4121,13 +4125,13 @@ function buildBtns(player,char){
 // ═══════════════════════════════════════════════
 function doBlock(player,fromRemote=false,remoteCd=null){
   triggerBlockVignette(player);
-  if(busy)return;
+  if(!fromRemote && busy)return;
   if(window._fwMP?.active && !fromRemote){
-    if(player!==window._fwMP.slot){return;}
+    if(player!==window._fwMP.slot)return;
     fwSendAction({type:'block'});
   }
   const pn=player==='p1'?1:2;
-  if(turn!==pn){showMsg("Not your turn!",900);return;}
+  if(!fromRemote && turn!==pn){showMsg("Not your turn!",900);return;}
   const cd=player==='p1'?p1BlockCooldown:p2BlockCooldown;
   if(cd>0){showMsg(`Block on cooldown for ${cd} more turn${cd>1?'s':''}!`,1000);return;}
   const isBlocking=player==='p1'?(p1Block==='blocking'):(p2Block==='blocking');
@@ -4164,16 +4168,16 @@ function doBlock(player,fromRemote=false,remoteCd=null){
 //  HEAL ACTION
 // ═══════════════════════════════════════════════
 function doHeal(player,fromRemote=false,remoteHealCd=null){
-  if(busy)return;
+  if(!fromRemote && busy)return;
   if(window._fwMP?.active && !fromRemote){
-    if(player!==window._fwMP.slot){return;}
+    if(player!==window._fwMP.slot)return;
     const _hcd=Math.floor(Math.random()*3)+2;
     fwSendAction({type:'heal',healCd:_hcd});
     // Use the computed value locally too
     if(player==='p1') p1HealCooldown=_hcd; else p2HealCooldown=_hcd;
   }
   const pn=player==='p1'?1:2;
-  if(turn!==pn){showMsg("Not your turn!",900);return;}
+  if(!fromRemote && turn!==pn){showMsg("Not your turn!",900);return;}
   const cd=player==='p1'?p1HealCooldown:p2HealCooldown;
   if(cd>0){showMsg(`Heal on cooldown for ${cd} more round${cd>1?'s':''}!`,1100);return;}
   const maxHP=CHARS.find(c=>c.id===(player==='p1'?p1Char:p2Char)).hp;
@@ -4252,14 +4256,16 @@ function spawnHealParticles(x,y){
 //  ATTACK ACTION
 // ═══════════════════════════════════════════════
 function doAttack(player,atkIdx,isSpecial,fromRemote=false,remoteDmg=null){
-  if(busy)return;
-  // Multiplayer guard
+  // Remote actions (from opponent) bypass busy + turn checks
+  // The queue system ensures they only run when safe
+  if(!fromRemote && busy)return;
+  // Local MP: only your slot can act locally
   if(window._fwMP?.active && !fromRemote){
-    if(player!==window._fwMP.slot){return;} // not your fighter
-    // Note: action sent AFTER dmg computed below
+    if(player!==window._fwMP.slot)return;
   }
   const pn=player==='p1'?1:2;
-  if(turn!==pn){showMsg("Not your turn!",900);return;}
+  // Only enforce turn for LOCAL actions — remote actions always execute
+  if(!fromRemote && turn!==pn){showMsg("Not your turn!",900);return;}
 
   const attC=CHARS.find(c=>c.id===(player==='p1'?p1Char:p2Char));
   const defC=CHARS.find(c=>c.id===(player==='p1'?p2Char:p1Char));
@@ -4545,8 +4551,11 @@ function advanceTurn(){
   }
 
   busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
-  // Safety: clear any stuck MP processing
-  if(window._fwMP?.active){_mpProcessing=false;setTimeout(_mpProcessNextAction,50);}
+  // After each turn, process any queued remote actions
+  if(window._fwMP?.active){
+    window._mpBusyStart=null;
+    setTimeout(_mpProcessNextAction,80);
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -5113,7 +5122,8 @@ async function fwCreateRoom(){
       el.style.cssText='display:block;text-align:center;padding:.5rem;border:1px solid rgba(255,200,60,.3);border-radius:6px;margin-top:.4rem;background:rgba(255,200,0,.05);';
     }
     _setOnlineStatus('⏳ Waiting for opponent to join with code: '+d.roomCode);
-    _pollTimer=setInterval(_doPoll,_pollInterval);
+    // Poll faster while waiting for opponent to join room
+    _pollTimer=setInterval(_doPoll,1000);
   }catch(err){_setOnlineStatus('❌ '+err.message);}
 }
 async function fwJoinRoom(code){
