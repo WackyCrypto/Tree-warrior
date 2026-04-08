@@ -2396,7 +2396,6 @@ let p1BlockCooldown=0, p2BlockCooldown=0;
 let p1AtkCooldowns={}, p2AtkCooldowns={};
 // Heal: cooldown turns, skipNextTurn flag, dmgReduction flag
 let p1HealCooldown=0, p2HealCooldown=0;
-let p1SkipTurn=false, p2SkipTurn=false;
 let p1DmgReduced=false, p2DmgReduced=false;
 let p1Heals=0, p2Heals=0;
 let turn=1,round=1,busy=false;
@@ -3986,7 +3985,7 @@ function startBattle(){
   p1HP=c1.hp;p2HP=c2.hp;
   p1Power=0;p2Power=0;p1SpecialUsed=false;p2SpecialUsed=false;
   p1Block=null;p2Block=null;p1BlockHP=100;p2BlockHP=100;p1BlockBroken=false;p2BlockBroken=false;p1BlockCooldown=0;p2BlockCooldown=0;p1AtkCooldowns={};p2AtkCooldowns={};
-  p1HealCooldown=0;p2HealCooldown=0;p1SkipTurn=false;p2SkipTurn=false;p1DmgReduced=false;p2DmgReduced=false;p1Heals=0;p2Heals=0;
+  p1HealCooldown=0;p2HealCooldown=0;p1DmgReduced=false;p2DmgReduced=false;p1Heals=0;p2Heals=0;
   turn=1;round=1;busy=false;totalRounds=0;p1TotalDmg=0;p2TotalDmg=0;p1Blocks=0;p2Blocks=0;
 
   initSkins();
@@ -4130,13 +4129,11 @@ function doHeal(player,fromRemote=false,remoteHealCd=null,remoteHealAmt=null){
   if(player==='p1'){
     p1HP=Math.min(maxHP,p1HP+healAmt);
     if(remoteHealCd) p1HealCooldown=remoteHealCd;
-    p1SkipTurn=true;
     p1DmgReduced=true;
     p1Heals++;
   } else {
     p2HP=Math.min(maxHP,p2HP+healAmt);
     if(remoteHealCd) p2HealCooldown=remoteHealCd;
-    p2SkipTurn=true;
     p2DmgReduced=true;
     p2Heals++;
   }
@@ -4160,7 +4157,7 @@ function doHeal(player,fromRemote=false,remoteHealCd=null,remoteHealAmt=null){
   },200);
 
   const cd2=player==='p1'?p1HealCooldown:p2HealCooldown;
-  showMsg(`💚 +${healAmt} HP restored! Turn skipped — 40% dmg shield for opponent's next turn (CD: ${cd2} rounds)`,2400,'heal');
+  showMsg(`💚 +${healAmt} HP restored! 40% dmg shield next turn (CD: ${cd2} rounds)`,2000,'heal');
   updateHUD();updateHealUI();
 
   setTimeout(()=>{
@@ -4478,23 +4475,6 @@ function advanceTurn(){
   if(turn===1){ if(p1HealCooldown>0)p1HealCooldown--; }
   else { if(p2HealCooldown>0)p2HealCooldown--; }
 
-  // Check if new active player must skip their turn
-  const skipP = turn===1?p1SkipTurn:p2SkipTurn;
-  if(skipP){
-    if(turn===1){p1SkipTurn=false;}else{p2SkipTurn=false;}
-    busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
-    const skipName=turn===1?'Player 1':'Player 2';
-    showMsg(`⏭ ${skipName}'s turn skipped (healing)`,1600);
-    // Process any queued MP actions BEFORE the auto-advance
-    if(window._fwMP?.active){window._mpBusyStart=null;_mpProcessing=false;setTimeout(_mpProcessNextAction,80);}
-    setTimeout(()=>{
-      if(!busy){
-        busy=true;disableAllBtns(true);
-        setTimeout(()=>advanceTurn(),800);
-      }
-    },1700);
-    return;
-  }
 
   busy=false;disableAllBtns(false);updateTurnUI();updateBlockUI();updateHealUI();
   if(window._fwMP?.active){
@@ -4675,8 +4655,8 @@ function updateHealUI(){
       if(cd>0||atFull)hb.classList.add('on-cooldown');else hb.classList.remove('on-cooldown');
     }
   };
-  update('p1',p1HealCooldown,p1SkipTurn,p1DmgReduced);
-  update('p2',p2HealCooldown,p2SkipTurn,p2DmgReduced);
+  update('p1',p1HealCooldown,false,p1DmgReduced);
+  update('p2',p2HealCooldown,false,p2DmgReduced);
 }
 function updateTurnUI(){
   const p1t=document.getElementById('p1-turn'),p2t=document.getElementById('p2-turn');
