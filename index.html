@@ -16,7 +16,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#050208;}
 body{font-family:'Crimson Pro',serif;color:var(--text);}
 
 /* ── SCREENS ── */
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s ease;overflow-y:auto;padding:1rem 0;}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:5vh;transition:opacity .7s ease;overflow-y:auto;padding-bottom:1rem;}
 .screen.hidden{opacity:0;pointer-events:none;}
 
 /* ════ CREDITS ════ */
@@ -1028,25 +1028,21 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
   <p class="title-story">When the blood moon rises, ancient warriors of root and bark emerge from the depths. Choose your champion. Attack, block, and outlast your foe to claim the forest throne.</p>
   <button class="btn-primary" onclick="showSelect()">CHOOSE YOUR FIGHTER</button>
   <div id="online-panel" style="display:none">
-    <div class="online-panel-title">⚔ PLAY ONLINE <span id="ws-dot" style="font-size:.6rem;opacity:.6">⚫</span></div>
+    <div class="online-panel-title">⚔ PLAY ONLINE <span id="ws-dot">🟢</span></div>
     <div class="online-btns">
       <button class="btn-online" onclick="fwFindMatch()">🔍 Find Match</button>
       <button class="btn-online" onclick="fwCreateRoom()">🏠 Create Room</button>
-      <button class="btn-online" onclick="showJoinRoom()">🚪 Join Room</button>
     </div>
-    <div id="join-room-area" style="display:none;flex-direction:column;align-items:center;gap:.5rem;margin-top:.4rem;width:100%;">
+    <div style="display:flex;align-items:center;gap:.4rem;margin-top:.4rem;flex-wrap:wrap;justify-content:center;">
       <input id="room-code-input" type="text" inputmode="text" autocomplete="off"
-        placeholder="Enter room code" maxlength="6"
-        style="font-size:1.3rem;padding:.5rem .8rem;border-radius:6px;text-align:center;width:10rem;letter-spacing:.25em;background:#1a1a2e;border:2px solid #44ffaa;color:#44ffaa;outline:none;text-transform:uppercase;-webkit-appearance:none;"
+        placeholder="Room code" maxlength="6"
+        style="font-size:1rem;padding:.4rem .5rem;border-radius:5px;text-align:center;width:7rem;letter-spacing:.2em;background:#111;border:2px solid #44ffaa;color:#44ffaa;outline:none;"
         oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"/>
-      <button onclick="fwJoinRoomFromInput()" 
-        style="padding:.5rem 1.5rem;background:rgba(0,200,100,.25);border:2px solid #44ffaa;color:#44ffaa;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit;letter-spacing:.05em;">
-        JOIN ROOM →
-      </button>
+      <button onclick="fwJoinRoomFromInput()" style="padding:.4rem .8rem;background:rgba(0,200,100,.2);border:2px solid #44ffaa;color:#44ffaa;border-radius:5px;cursor:pointer;font-size:.65rem;">Join →</button>
     </div>
-    <div id="room-code-display"></div>
-    <div id="online-status" style="min-height:2rem;font-size:clamp(.75rem,2.5vmin,1.1rem);color:#44ffaa;text-align:center;margin-top:.5rem;font-weight:bold;letter-spacing:.03em;"></div>
-  </div>
+    <div id="room-code-display" style="margin-top:.3rem;text-align:center;"></div>
+    <div id="online-status" style="min-height:1.5rem;font-size:clamp(.6rem,2vmin,.9rem);color:#44ffaa;text-align:center;margin-top:.3rem;font-weight:bold;"></div>
+    </div>
   <button class="btn-primary" style="margin-top:.6rem;" onclick="showAchievements()">&#127942; ACHIEVEMENTS</button>
   <button class="btn-primary" style="margin-top:.4rem;" onclick="showShop()">&#128722; SHOP</button>
   <button id="title-logout-btn" style="display:none" onclick="fwLogout()">Sign out</button>
@@ -3836,25 +3832,13 @@ async function fwFindMatch(){
 }
 
 function showJoinRoom(){
-  const area=document.getElementById('join-room-area');
-  if(!area)return;
-  const hidden=area.style.display==='none'||!area.style.display;
-  area.style.display=hidden?'flex':'none';
-  if(hidden){
-    const inp=document.getElementById('room-code-input');
-    if(inp){
-      inp.value='';
-      // Delay focus slightly for mobile keyboard to appear
-      setTimeout(()=>inp.focus(),100);
-    }
-    _setOnlineStatus("👆 Type the room code shared by your friend");
-  } else {
-    _setOnlineStatus('');
-  }
+  const inp=document.getElementById('room-code-input');
+  if(inp){inp.value='';inp.focus();}
+  _setOnlineStatus('👆 Type the room code then tap Join →');
 }
 async function fwJoinRoomFromInput(){
   const inp=document.getElementById('room-code-input');
-  if(!inp||inp.value.length<4){_setOnlineStatus('❌ Enter the full room code');return;}
+  if(!inp||inp.value.length<3){_setOnlineStatus('❌ Enter the room code');return;}
   const area=document.getElementById('join-room-area');
   if(area)area.style.display='none';
   await fwJoinRoom(inp.value.trim().toUpperCase());
