@@ -1000,7 +1000,7 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
     <div id="form-register" style="display:none">
       <input class="login-input" id="reg-username" type="text" placeholder="Username (3-20 chars)" autocomplete="username"/>
       <div style="height:.5vmin"></div>
-      <input class="login-input" id="reg-email" type="email" placeholder="Email address" autocomplete="email"/>
+      <input class="login-input" id="reg-email" type="email" placeholder="Email (optional)" autocomplete="email"/>
       <div style="height:.5vmin"></div>
       <input class="login-input" id="reg-password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password"/>
     </div>
@@ -3691,7 +3691,9 @@ async function apiGet(path, auth=false){
 
 // ── Auth ──
 async function fwRegister(username,email,password){
-  const d=await apiPost('/auth/register',{username,email,password});
+  const body={username,password};
+  if(email) body.email=email;
+  const d=await apiPost('/auth/register',body);
   if(d.token){FW_TOKEN=d.token;FW_USER=d.user;_persistAuth();fwConnect();}
   return d;
 }
@@ -3912,7 +3914,7 @@ async function submitLogin(){
     const username=document.getElementById('reg-username').value.trim();
     const email=document.getElementById('reg-email').value.trim();
     const pw=document.getElementById('reg-password').value;
-    if(!username||!email||!pw){errEl.textContent='Please fill in all fields.';btn.disabled=false;btn.textContent='CREATE ACCOUNT';return;}
+    if(!username||!pw){errEl.textContent='Please enter a username and password.';btn.disabled=false;btn.textContent='CREATE ACCOUNT';return;}
     result=await fwRegister(username,email,pw);
   }
   if(result.error){
