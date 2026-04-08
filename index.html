@@ -1655,10 +1655,10 @@ function showMapSelect(){
     if(window._fwMP.slot==='p2'){
       // P2: disable confirm, show waiting
       if(confirmBtn){confirmBtn.disabled=true;confirmBtn.textContent='⏳ Waiting for '+window._fwMP.opponent+'...';}
-      _setOnlineStatus('⏳ Waiting for '+window._fwMP.opponent+' to pick the map...');
+      mpMsg('⏳ Waiting for '+window._fwMP.opponent+' to pick the map...');
     } else {
       // P1: pick and confirm normally
-      _setOnlineStatus('🗺️ Pick the battlefield!');
+      mpMsg('🗺 Pick the battlefield!');
     }
   }
 }
@@ -1707,7 +1707,7 @@ function confirmMap(){
   if(!selectedMap)return;
   if(window._fwMP?.active){
     if(window._fwMP.slot==='p2'){
-      _setOnlineStatus('⏳ Waiting for '+window._fwMP.opponent+' to confirm map...');
+      mpMsg('⏳ Waiting for '+window._fwMP.opponent+' to confirm map...');
       return;
     }
     // P1: send map to P2 then start
@@ -3892,9 +3892,12 @@ function showSelect(){
   updateSelectUI();
   updateCharCards();
   showScreen('select-screen');
-  // Reset MP action queue + watchdog
-  _mpActionQueue=[];_mpProcessing=false;
+  // In MP: preserve pending actions (char_select/map_select may be queued)
+  // Only reset processing flag, not the queue itself
+  _mpProcessing=false;
   if(window._mpWatchdog){clearInterval(window._mpWatchdog);window._mpWatchdog=null;}
+  // Process any already-queued MP actions after screen is ready
+  if(window._fwMP?.active) setTimeout(_mpProcessNextAction,300);
   // In MP: lock opponent's grid, show instructions
   if(window._fwMP?.active){
     const mySlot=window._fwMP.slot;
@@ -3906,7 +3909,7 @@ function showSelect(){
     }
     const oppLabel=document.querySelector(`#${oppSlot}-grid`)?.closest('.player-col')?.querySelector('h3');
     if(oppLabel) oppLabel.textContent=window._fwMP.opponent+' (opponent)';
-    _setOnlineStatus('Pick your fighter — waiting for '+window._fwMP.opponent+'...');
+    mpMsg('Pick YOUR fighter — waiting for '+window._fwMP.opponent+'...');
   }
 }
 
@@ -3961,15 +3964,21 @@ function updateSelectUI(){
     sum.textContent=mp?`You: ${(mp&&window._fwMP.slot==='p2'?c2:c1).name} vs ${window._fwMP?.opponent||'P2'}: ${(mp&&window._fwMP.slot==='p2'?c1:c2).name}`:`${c1.name} vs ${c2.name}`;
     if(prev)prev.textContent=`${c1.title}\n—\n${c2.title}`;
     btn.disabled=false;
-    if(mp)_setOnlineStatus('Both fighters chosen! '+(window._fwMP.slot==='p1'?'Select map →':'Waiting for '+window._fwMP.opponent+' to select map...'));
+    if(mp){
+      if(window._fwMP.slot==='p1'){
+        mpMsg('Both ready! Tap SELECT MAP to pick battlefield →');
+      } else {
+        mpMsg('Both ready! Tap SELECT MAP → then wait for '+window._fwMP.opponent);
+      }
+    }
   } else if(c1){
     sum.textContent=mp?`You chose ${window._fwMP.slot==='p1'?c1.name:c1.name} — waiting for opponent...`:`${c1.name} ready — P2 choose`;
     if(prev)prev.textContent='';btn.disabled=true;
-    if(mp)_setOnlineStatus('Waiting for '+window._fwMP.opponent+' to pick...');
+    if(mp)mpMsg('Waiting for '+window._fwMP.opponent+' to pick...');
   } else if(c2){
     sum.textContent=mp?`You chose ${window._fwMP.slot==='p2'?c2.name:c2.name} — waiting for opponent...`:`P1 choose — ${c2.name} ready`;
     if(prev)prev.textContent='';btn.disabled=true;
-    if(mp)_setOnlineStatus('Waiting for '+window._fwMP.opponent+' to pick...');
+    if(mp)mpMsg('Waiting for '+window._fwMP.opponent+' to pick...');
   } else {
     sum.textContent=mp?'Pick your fighter!':'Select a fighter for each player';
     if(prev)prev.textContent='';btn.disabled=true;
@@ -4994,7 +5003,7 @@ function _mpReceiveAction(action){
       cd.classList.toggle('selected',cd.dataset.id===action.charId);
     });
     updateSelectUI();
-    _setOnlineStatus('⚔ '+window._fwMP.opponent+' chose their fighter!');
+    mpMsg('⚔ '+window._fwMP.opponent+' chose their fighter!');
   }
   else if(action.type==='map_select'){
     // P1 picked map — P2 starts battle
@@ -5003,11 +5012,11 @@ function _mpReceiveAction(action){
     document.querySelectorAll('.map-card').forEach(mc=>{
       mc.classList.toggle('selected',mc.dataset.id===action.mapId);
     });
-    _setOnlineStatus('🗺 Map chosen! Starting battle...');
+    mpMsg('🗺 Map chosen! Starting battle...');
     setTimeout(()=>showPreBattleAchs(p1Char,p2Char,()=>startBattle()),800);
   }
   else if(action.type==='opponent_disconnected'){
-    _setOnlineStatus('❌ Opponent disconnected');
+    mpMsg('❌ Opponent disconnected. Game over.');
     window._fwMP={active:false};
   }
 }
