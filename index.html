@@ -5099,7 +5099,7 @@ function _mpSyncMapSelect(id){
 }
 
 async function fwCreateRoom(){
-  if(!FW_TOKEN){_setOnlineStatus('❌ Please sign in first!');return;}
+  if(!FW_TOKEN){alert('Not signed in!');return;}
   fwStopPolling();
   _setOnlineStatus('🔄 Creating room...');
   try{
@@ -5108,10 +5108,11 @@ async function fwCreateRoom(){
     window._fwMP={active:false,roomCode:d.roomCode};
     const el=document.getElementById('room-code-display');
     if(el){
-      el.textContent='📋 Room Code: '+d.roomCode;
-      el.style.cssText='display:block;font-size:1.4rem;color:#ffcc44;letter-spacing:.2em;margin:.3rem 0;font-weight:bold;';
+      el.innerHTML='<div style="font-size:.55rem;color:rgba(240,232,208,.5);margin-bottom:.2rem;">Share with friend:</div>'
+        +'<div style="font-size:1.8rem;letter-spacing:.3em;color:#ffcc44;font-family:monospace;font-weight:bold;padding:.4rem;">'+d.roomCode+'</div>';
+      el.style.cssText='display:block;text-align:center;padding:.5rem;border:1px solid rgba(255,200,60,.3);border-radius:6px;margin-top:.4rem;background:rgba(255,200,0,.05);';
     }
-    _setOnlineStatus('✅ Share code "'+d.roomCode+'" with your friend!');
+    _setOnlineStatus('⏳ Waiting for opponent to join with code: '+d.roomCode);
     _pollTimer=setInterval(_doPoll,_pollInterval);
   }catch(err){_setOnlineStatus('❌ '+err.message);}
 }
