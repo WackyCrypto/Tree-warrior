@@ -1034,11 +1034,15 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
       <button class="btn-online" onclick="fwCreateRoom()">🏠 Create Room</button>
       <button class="btn-online" onclick="showJoinRoom()">🚪 Join Room</button>
     </div>
-    <div id="join-room-area" style="display:none;flex-direction:column;align-items:center;gap:.4rem;margin-top:.3rem;">
-      <input id="room-code-input" placeholder="ENTER CODE" maxlength="6" 
-        style="font-size:1.1rem;padding:.4rem .6rem;border-radius:4px;text-align:center;width:9rem;letter-spacing:.2em;background:rgba(0,0,0,.5);border:1.5px solid rgba(0,200,100,.4);color:#44ffaa;outline:none;"
-        oninput="this.value=this.value.toUpperCase()"/>
-      <button onclick="fwJoinRoomFromInput()" style="padding:.3rem 1rem;background:rgba(0,200,100,.2);border:1.5px solid rgba(0,200,100,.5);color:#44ffaa;border-radius:4px;cursor:pointer;font-size:.6rem;">JOIN →</button>
+    <div id="join-room-area" style="display:none;flex-direction:column;align-items:center;gap:.5rem;margin-top:.4rem;width:100%;">
+      <input id="room-code-input" type="text" inputmode="text" autocomplete="off"
+        placeholder="Enter room code" maxlength="6"
+        style="font-size:1.3rem;padding:.5rem .8rem;border-radius:6px;text-align:center;width:10rem;letter-spacing:.25em;background:#1a1a2e;border:2px solid #44ffaa;color:#44ffaa;outline:none;text-transform:uppercase;-webkit-appearance:none;"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"/>
+      <button onclick="fwJoinRoomFromInput()" 
+        style="padding:.5rem 1.5rem;background:rgba(0,200,100,.25);border:2px solid #44ffaa;color:#44ffaa;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:inherit;letter-spacing:.05em;">
+        JOIN ROOM →
+      </button>
     </div>
     <div id="room-code-display"></div>
     <div id="online-status" style="min-height:2rem;font-size:clamp(.75rem,2.5vmin,1.1rem);color:#44ffaa;text-align:center;margin-top:.5rem;font-weight:bold;letter-spacing:.03em;"></div>
@@ -3807,6 +3811,9 @@ async function fwFindMatch(){
   }
   fwStopPolling();
   window._fwMP={active:false};
+  _setOnlineStatus('🔄 Connecting...');
+  // Reset any stale server state first
+  await apiPost('/mp/reset',{},true);
   _setOnlineStatus('🔄 Joining queue...');
   try{
     const d=await apiPost('/mp/queue',{},true);
@@ -3835,8 +3842,14 @@ function showJoinRoom(){
   area.style.display=hidden?'flex':'none';
   if(hidden){
     const inp=document.getElementById('room-code-input');
-    if(inp){inp.value='';inp.focus();}
-    _setOnlineStatus('👆 Enter the 6-letter room code');
+    if(inp){
+      inp.value='';
+      // Delay focus slightly for mobile keyboard to appear
+      setTimeout(()=>inp.focus(),100);
+    }
+    _setOnlineStatus('👆 Type the 6-character code from your friend's screen');
+  } else {
+    _setOnlineStatus('');
   }
 }
 async function fwJoinRoomFromInput(){
@@ -5112,6 +5125,7 @@ async function fwCreateRoom(){
   fwStopPolling();
   _setOnlineStatus('🔄 Creating room...');
   try{
+    await apiPost('/mp/reset',{},true);
     const d=await apiPost('/mp/room/create',{},true);
     if(d.error){_setOnlineStatus('❌ '+d.error);return;}
     window._fwMP={active:false,roomCode:d.roomCode};
@@ -5129,7 +5143,8 @@ async function fwCreateRoom(){
 async function fwJoinRoom(code){
   if(!FW_TOKEN){alert('Sign in first!');return;}
   fwStopPolling();
-  _setOnlineStatus('🔄 Joining '+code+'...');
+  _setOnlineStatus('🔄 Joining room...');
+  await apiPost('/mp/reset',{},true);
   const d=await apiPost('/mp/room/join',{code:code},true);
   if(d.error){_setOnlineStatus('❌ '+d.error);return;}
   window._fwMP={active:true,slot:d.slot,opponent:d.opponent,roomCode:d.roomCode};
