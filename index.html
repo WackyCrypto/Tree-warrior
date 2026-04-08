@@ -1034,7 +1034,12 @@ body{font-family:'Crimson Pro',serif;color:var(--text);}
       <button class="btn-online" onclick="fwCreateRoom()">🏠 Create Room</button>
       <button class="btn-online" onclick="showJoinRoom()">🚪 Join Room</button>
     </div>
-    <input id="room-code-input" placeholder="ENTER CODE" maxlength="6" oninput="this.value=this.value.toUpperCase()"/>
+    <div id="join-room-area" style="display:none;flex-direction:column;align-items:center;gap:.4rem;margin-top:.3rem;">
+      <input id="room-code-input" placeholder="ENTER CODE" maxlength="6" 
+        style="font-size:1.1rem;padding:.4rem .6rem;border-radius:4px;text-align:center;width:9rem;letter-spacing:.2em;background:rgba(0,0,0,.5);border:1.5px solid rgba(0,200,100,.4);color:#44ffaa;outline:none;"
+        oninput="this.value=this.value.toUpperCase()"/>
+      <button onclick="fwJoinRoomFromInput()" style="padding:.3rem 1rem;background:rgba(0,200,100,.2);border:1.5px solid rgba(0,200,100,.5);color:#44ffaa;border-radius:4px;cursor:pointer;font-size:.6rem;">JOIN →</button>
+    </div>
     <div id="room-code-display"></div>
     <div id="online-status" style="min-height:2rem;font-size:clamp(.75rem,2.5vmin,1.1rem);color:#44ffaa;text-align:center;margin-top:.5rem;font-weight:bold;letter-spacing:.03em;"></div>
   </div>
@@ -3820,21 +3825,22 @@ async function fwFindMatch(){
 }
 
 function showJoinRoom(){
-  const inp=document.getElementById('room-code-input');
-  if(!inp)return;
-  const hidden=!inp.style.display||inp.style.display==='none';
-  inp.style.display=hidden?'block':'none';
-  inp.style.cssText='display:'+inp.style.display+';font-size:1rem;padding:.4rem;border-radius:4px;text-align:center;width:8rem;letter-spacing:.2em;';
+  const area=document.getElementById('join-room-area');
+  if(!area)return;
+  const hidden=area.style.display==='none'||!area.style.display;
+  area.style.display=hidden?'flex':'none';
   if(hidden){
-    inp.focus();
-    _setOnlineStatus('👆 Type 6-char code then press Enter');
-    inp.onkeydown=async e=>{
-      if(e.key==='Enter'&&inp.value.length>=4){
-        await fwJoinRoom(inp.value.trim().toUpperCase());
-        inp.style.display='none';
-      }
-    };
+    const inp=document.getElementById('room-code-input');
+    if(inp){inp.value='';inp.focus();}
+    _setOnlineStatus('👆 Enter the 6-letter room code');
   }
+}
+async function fwJoinRoomFromInput(){
+  const inp=document.getElementById('room-code-input');
+  if(!inp||inp.value.length<4){_setOnlineStatus('❌ Enter the full room code');return;}
+  const area=document.getElementById('join-room-area');
+  if(area)area.style.display='none';
+  await fwJoinRoom(inp.value.trim().toUpperCase());
 }
 
 function _wsHandle_DISABLED(msg){
@@ -3946,8 +3952,9 @@ function showSelect(){
   updateSelectUI();
   updateCharCards();
   showScreen('select-screen');
-  // Reset MP action queue
+  // Reset MP action queue + watchdog
   _mpActionQueue=[];_mpProcessing=false;
+  if(window._mpWatchdog){clearInterval(window._mpWatchdog);window._mpWatchdog=null;}
   // In MP: lock opponent's grid, show instructions
   if(window._fwMP?.active){
     const mySlot=window._fwMP.slot;
@@ -4061,6 +4068,26 @@ function startBattle(){
   showScreen('battle-screen');
   updateFighterLevelTooltips();
   showMsg('⚔ BATTLE START ⚔',2000);
+  // Safety: watchdog timer resets stuck busy state in MP
+  if(window._mpWatchdog) clearInterval(window._mpWatchdog);
+  if(window._fwMP?.active){
+    window._mpWatchdog=setInterval(()=>{
+      if(busy){
+        if(!window._mpBusyStart) window._mpBusyStart=Date.now();
+        else if(Date.now()-window._mpBusyStart>8000){
+          console.warn('MP watchdog: resetting stuck busy');
+          busy=false;
+          _mpProcessing=false;
+          window._mpBusyStart=null;
+          disableAllBtns(false);
+          updateTurnUI();
+          setTimeout(_mpProcessNextAction,100);
+        }
+      } else {
+        window._mpBusyStart=null;
+      }
+    },1000);
+  }
 }
 
 function setIdle(wid,p){const el=document.getElementById(wid);el.style.animation='';void el.offsetWidth;el.style.animation=p===1?'idle1 4s cubic-bezier(.45,.05,.55,.95) infinite':'idle2 4s cubic-bezier(.45,.05,.55,.95) infinite';}
@@ -4699,13 +4726,20 @@ function updateHealUI(){
 function updateTurnUI(){
   const p1t=document.getElementById('p1-turn'),p2t=document.getElementById('p2-turn');
   const p1c=document.getElementById('p1-ctrl'),p2c=document.getElementById('p2-ctrl');
+  const mp=window._fwMP?.active;
+  const mySlot=mp?window._fwMP.slot:null;
+  const oppName=mp?window._fwMP.opponent:'Player 2';
   if(turn===1){
-    p1t.textContent='⚔ Your Turn!';p1t.className='turn-ind active';
-    p2t.textContent='Waiting…';p2t.className='turn-ind';
+    p1t.textContent=mp?(mySlot==='p1'?'⚔ YOUR TURN':'⚔ '+oppName+"'s turn"):'⚔ P1 Turn';
+    p1t.className='turn-ind active';
+    p2t.textContent=mp?(mySlot==='p2'?'⚔ YOUR TURN':'Waiting...'):'Waiting…';
+    p2t.className='turn-ind';
     p1c.classList.add('your-turn');p2c.classList.remove('your-turn');
   } else {
-    p2t.textContent='⚔ Your Turn!';p2t.className='turn-ind active';
-    p1t.textContent='Waiting…';p1t.className='turn-ind';
+    p2t.textContent=mp?(mySlot==='p2'?'⚔ YOUR TURN':'⚔ '+oppName+"'s turn"):'⚔ P2 Turn';
+    p2t.className='turn-ind active';
+    p1t.textContent=mp?(mySlot==='p1'?'⚔ YOUR TURN':'Waiting...'):'Waiting…';
+    p1t.className='turn-ind';
     p2c.classList.add('your-turn');p1c.classList.remove('your-turn');
   }
   updateSpecialBtns();
